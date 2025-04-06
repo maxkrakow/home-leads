@@ -1,0 +1,136 @@
+.pricing-section {
+  padding: 5rem 0;
+  background-color: #fff;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.pricing-card {
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card.featured {
+  border-color: #3498db;
+  box-shadow: 0 10px 30px rgba(52, 152, 219, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.pricing-card.featured::before {
+  content: "Most Popular";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3498db;
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pricing-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.pricing-price {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #3498db;
+  margin-bottom: 1rem;
+}
+
+.pricing-price span {
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+.pricing-description {
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  text-align: left;
+}
+
+.pricing-features li {
+  padding: 0.5rem 0;
+  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+}
+
+.pricing-features li::before {
+  content: "✓";
+  color: #3498db;
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+@media (max-width: 992px) {
+  .pricing-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .pricing-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.bg-brand-500 {
+  background-color: #22b0ad !important;
+  width: 100% !important;
+}
+
+.rounded-t-3xl {
+  border-top-left-radius: 1.5rem !important;
+  border-top-right-radius: 1.5rem !important;
+  width: 100% !important;
+}
+
+/* Clean, direct fix for the Most Popular banner */
+.most-popular-banner {
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Ensure the card with the popular tag has proper styling */
+[class*="lg:rounded-t-3xl"] {
+  overflow: hidden !important;
+  border-top-left-radius: 1.5rem !important;
+  border-top-right-radius: 1.5rem !important;
+} 
