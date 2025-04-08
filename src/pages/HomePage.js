@@ -4,12 +4,11 @@ import FeaturesSection from '../components/FeaturesSection';
 import TestimonialsSection from '../components/TestimonialsSection';
 import PricingSection from '../components/PricingSection';
 import ContactSection from '../components/ContactSection';
-import './HomePage.css';
-// Import other sections as needed
+// Remove HomePage.css import
 
 const HomePage = () => {
   return (
-    <div className="home-page">
+    <div className="w-full">
       <HeroSection />
       <FeaturesSection />
       <TestimonialsSection />

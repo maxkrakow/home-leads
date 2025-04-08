@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './ContactPage.css';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -43,43 +42,46 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="contact-page">
-      <div className="contact-container">
-        <div className="contact-info">
-          <h1>Contact Us</h1>
-          <p>Have questions about Landing Leads? We're here to help!</p>
+    <div className="py-8">
+      <div className="container mx-auto px-4 md:grid md:grid-cols-2 gap-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Contact Us</h1>
+          <p className="text-lg text-gray-600 mb-8">Have questions about Landing Leads? We're here to help!</p>
           
-          <div className="contact-methods">
-            <div className="contact-method">
-              <h3>Email</h3>
-              <p>support@landingleads.com</p>
+          <div className="mt-8 space-y-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-brand-500 mb-2">Email</h3>
+              <p className="text-gray-700">support@landingleads.com</p>
             </div>
             
-            <div className="contact-method">
-              <h3>Phone</h3>
-              <p>(555) 123-4567</p>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-brand-500 mb-2">Phone</h3>
+              <p className="text-gray-700">(555) 123-4567</p>
             </div>
             
-            <div className="contact-method">
-              <h3>Address</h3>
-              <p>123 Business Ave, Suite 100<br />San Francisco, CA 94107</p>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-brand-500 mb-2">Address</h3>
+              <p className="text-gray-700">123 Business Ave, Suite 100<br />San Francisco, CA 94107</p>
             </div>
           </div>
         </div>
         
-        <div className="contact-form-container">
+        <div className="bg-gray-50 rounded-lg p-8 shadow-md">
           {formStatus.submitted ? (
-            <div className="form-success">
-              <h2>Thank You!</h2>
-              <p>Your message has been sent. We'll get back to you soon.</p>
-              <button onClick={() => setFormStatus({ submitted: false, error: false })}>
+            <div className="text-center py-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Thank You!</h2>
+              <p className="text-gray-600 mb-8">Your message has been sent. We'll get back to you soon.</p>
+              <button 
+                onClick={() => setFormStatus({ submitted: false, error: false })}
+                className="bg-brand-500 hover:bg-brand-600 text-white py-3 px-6 rounded-md font-medium transition-colors"
+              >
                 Send Another Message
               </button>
             </div>
           ) : (
-            <form className="contact-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="name">Name</label>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   id="name"
@@ -87,11 +89,12 @@ const ContactPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
                   id="email"
@@ -99,11 +102,12 @@ const ContactPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="subject">Subject</label>
+              <div>
+                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                 <input
                   type="text"
                   id="subject"
@@ -111,11 +115,12 @@ const ContactPage = () => {
                   value={formData.subject}
                   onChange={handleChange}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500"
                 />
               </div>
               
-              <div className="form-group">
-                <label htmlFor="message">Message</label>
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
                 <textarea
                   id="message"
                   name="message"
@@ -123,10 +128,16 @@ const ContactPage = () => {
                   onChange={handleChange}
                   rows="5"
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-brand-500 focus:border-brand-500 resize-y"
                 ></textarea>
               </div>
               
-              <button type="submit" className="submit-btn">Send Message</button>
+              <button 
+                type="submit" 
+                className="w-full bg-brand-500 hover:bg-brand-600 text-white py-3 px-6 rounded-md font-medium transition-colors"
+              >
+                Send Message
+              </button>
             </form>
           )}
         </div>

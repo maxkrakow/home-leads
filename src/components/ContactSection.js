@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './ContactSection.css';
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -46,7 +45,7 @@ const ContactSection = () => {
         <div className="mx-auto max-w-2xl lg:mx-0">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Contact us</h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Have questions about our platform? Want to learn more about how we can help you generate and convert more leads?
+            Have questions about our new homeowner data service? Want to learn more about county coverage or how our daily deed scraping works?
             Fill out the form below and our team will get back to you shortly.
           </p>
         </div>

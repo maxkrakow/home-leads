@@ -1,6 +1,5 @@
 import React from 'react';
 import { CheckIcon } from '@heroicons/react/20/solid';
-import './PricingSection.css';
 
 const tiers = [
   {
@@ -8,9 +7,10 @@ const tiers = [
     id: 'tier-basic',
     href: '#',
     priceMonthly: '$99',
-    description: 'Perfect for small real estate teams just getting started with lead generation.',
+    description: 'Perfect for service providers focusing on a single county with moderate new home sales.',
     features: [
-      'Up to 500 leads per month',
+      'Access to 1 county',
+      '500-1000 new homeowners monthly',
       'Basic filtering options',
       'Email support',
       'Lead export functionality',
@@ -23,15 +23,15 @@ const tiers = [
     id: 'tier-professional',
     href: '#',
     priceMonthly: '$249',
-    description: 'Ideal for growing real estate businesses looking to scale their lead generation.',
+    description: 'Ideal for businesses serving multiple counties and needing more comprehensive data.',
     features: [
-      'Up to 2,000 leads per month',
+      'Access to 3 counties',
+      '1500-3000 new homeowners monthly',
       'Advanced filtering options',
       'Email and phone support',
       'CRM integration',
       'Up to 5 user accounts',
-      'Automated follow-up sequences',
-      'Performance analytics',
+      'Historical data access',
     ],
     mostPopular: true,
   },
@@ -40,15 +40,15 @@ const tiers = [
     id: 'tier-enterprise',
     href: '#',
     priceMonthly: '$499',
-    description: 'For established agencies with high-volume lead generation needs.',
+    description: 'For established businesses covering large regions with high-volume lead needs.',
     features: [
-      'Unlimited leads',
-      'Premium data sources',
+      'Access to 10+ counties',
+      '5000+ new homeowners monthly',
+      'Premium data enrichment',
       'Dedicated account manager',
       'Custom integrations',
       'Unlimited user accounts',
       'Advanced analytics and reporting',
-      'White-label options',
       'API access',
     ],
     mostPopular: false,
@@ -62,11 +62,11 @@ export default function PricingSection() {
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base font-semibold leading-7 text-brand-500">Pricing</h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-            Plans for teams of all sizes
+            County-based subscription plans
           </p>
         </div>
         <p className="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600">
-          Choose the perfect plan to help you find and convert more homeowner leads.
+          Choose the perfect plan to access new homeowner data in your target counties.
         </p>
         <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
           {tiers.map((tier, tierIdx) => (
@@ -83,7 +83,7 @@ export default function PricingSection() {
               <div>
                 {tier.mostPopular ? (
                   <div className="relative -mx-8 -mt-8 mb-8">
-                    <div className="absolute inset-x-0 top-0 flex h-12 items-center justify-center bg-brand-500 most-popular-banner">
+                    <div className="absolute inset-x-0 top-0 flex h-12 items-center justify-center bg-brand-500 rounded-t-3xl">
                       <span className="text-sm font-semibold text-white">Most popular</span>
                     </div>
                     <div className="pt-12"></div>
