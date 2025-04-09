@@ -426,7 +426,7 @@ const DashboardPage = () => {
                         <img
                           className="h-8 w-auto"
                           src="/logo.png"
-                          alt="HomeLeads Pro"
+                          alt="Untapped Homes"
                         />
                       </div>
                       <nav className="flex flex-1 flex-col">
@@ -486,7 +486,7 @@ const DashboardPage = () => {
               <img
                 className="h-8 w-auto"
                 src="/logo.png"
-                alt="HomeLeads Pro"
+                alt="Untapped Homes"
               />
             </div>
             <nav className="flex flex-1 flex-col">
@@ -588,7 +588,7 @@ const DashboardPage = () => {
                           <div className="h-2 w-2 rounded-full bg-current" />
                         </div>
                         <h1 className="flex gap-x-3 text-base font-semibold leading-7 text-white">
-                          <span>HomeLeads Pro</span>
+                          <span>Untapped Homes</span>
                           <span className="text-gray-600">/</span>
                           <span>Dashboard</span>
                         </h1>

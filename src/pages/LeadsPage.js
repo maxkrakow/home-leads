@@ -115,7 +115,7 @@ const LeadsPage = () => {
       {/* Sidebar */}
       <div className="w-64 bg-[#0e1525] flex flex-col">
         <div className="p-4">
-          <img src="/logo.png" alt="HomeLeads Pro" className="h-8 w-auto" />
+          <img src="/logo.png" alt="Untapped Homes" className="h-8 w-auto" />
         </div>
         
         <nav className="mt-10 flex-1">

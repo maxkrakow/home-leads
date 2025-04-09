@@ -325,7 +325,11 @@ function DashboardPage({ currentUser }) {
         {/* Sidebar */}
         <div className="w-64 bg-[#0e1525] flex flex-col">
           <div className="p-4">
-            <img src="/logo.png" alt="HomeLeads Pro" className="h-8 w-auto" />
+            <img
+              className="h-8 w-auto"
+              src="/logo.png"
+              alt="Untapped Homes"
+            />
           </div>
           
           <nav className="mt-10 flex-1">

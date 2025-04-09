@@ -17,7 +17,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <img src="/logo.png" alt="HomeLeads Pro" className="h-10 mb-4" />
+              <img src="/logo.png" alt="Untapped Homes" className="h-10 mb-4" />
             </div>
             <p className="text-gray-400 mb-6 leading-relaxed">
               Daily-updated new homeowner data with verified contact details for service providers.
@@ -63,7 +63,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-12 pt-8 border-t border-gray-700 text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} HomeLeads Pro. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Untapped Homes. All rights reserved.</p>
         </div>
       </div>
 

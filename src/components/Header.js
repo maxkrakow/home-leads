@@ -40,8 +40,8 @@ const Header = () => {
           {/* Logo section */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center text-decoration-none">
-              <img src="/logo.png" alt="HomeLeads Pro" className="h-10 w-auto" />
-              <span className="ml-2 text-xl font-bold text-gray-900">HomeLeads Pro</span>
+              <img src="/logo.png" alt="Untapped Homes" className="h-10 w-auto" />
+              <span className="ml-2 text-xl font-bold text-gray-900">Untapped Homes</span>
             </Link>
           </div>
           

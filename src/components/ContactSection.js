@@ -64,16 +64,16 @@ const ContactSection = () => {
               <div>
                 <dt className="sr-only">Email</dt>
                 <dd>
-                  <a className="hover:text-brand-500" href="mailto:info@homeleadspro.com">
-                    info@homeleadspro.com
+                  <a className="hover:text-brand-500" href="mailto:info@untappedhomes.com">
+                    info@untappedhomes.com
                   </a>
                 </dd>
               </div>
               <div>
                 <dt className="sr-only">Phone</dt>
                 <dd>
-                  <a className="hover:text-brand-500" href="tel:+1 (555) 234-5678">
-                    +1 (555) 234-5678
+                  <a className="hover:text-brand-500" href="tel:+1 (914) 319-7160">
+                    +1 (914) 319-7160
                   </a>
                 </dd>
               </div>
@@ -85,16 +85,16 @@ const ContactSection = () => {
               <div>
                 <dt className="sr-only">Email</dt>
                 <dd>
-                  <a className="hover:text-brand-500" href="mailto:support@homeleadspro.com">
-                    support@homeleadspro.com
+                  <a className="hover:text-brand-500" href="mailto:support@untappedhomes.com">
+                    support@untappedhomes.com
                   </a>
                 </dd>
               </div>
               <div>
                 <dt className="sr-only">Phone</dt>
                 <dd>
-                  <a className="hover:text-brand-500" href="tel:+1 (555) 987-6543">
-                    +1 (555) 987-6543
+                  <a className="hover:text-brand-500" href="tel:+1 (914) 319-7160">
+                    +1 (914) 319-7160
                   </a>
                 </dd>
               </div>
