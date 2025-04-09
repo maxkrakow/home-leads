@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PopupWidget } from 'react-calendly';
 
 const FloatingDemoButton = () => {
-  // Use the correct Calendly URL
-  const calendlyUrl = "https://calendly.com/lended/home-leads-demo-call";
+  const [isOpen, setIsOpen] = useState(false);
+  const calendlyUrl = "https://calendly.com/untappedleads/untapped-homes-demo";
 
   return (
     <div className="fixed bottom-5 right-5 z-50">

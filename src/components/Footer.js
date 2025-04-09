@@ -4,7 +4,7 @@ import { PopupModal } from 'react-calendly';
 
 const Footer = () => {
   const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
-  const calendlyUrl = "https://calendly.com/lended/home-leads-demo-call";
+  const calendlyUrl = "https://calendly.com/untappedleads/untapped-homes-demo";
 
   const openCalendly = (e) => {
     e.preventDefault();

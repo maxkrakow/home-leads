@@ -4,7 +4,7 @@ import { PopupModal } from 'react-calendly';
 
 const HeroSection = () => {
   // Use the correct Calendly URL
-  const calendlyUrl = "https://calendly.com/lended/home-leads-demo-call";
+  const calendlyUrl = "https://calendly.com/untappedleads/untapped-homes-demo";
   const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
 
   const openCalendly = () => {

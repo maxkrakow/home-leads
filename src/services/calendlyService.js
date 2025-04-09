@@ -4,7 +4,7 @@ const CALENDLY_API_URL = 'https://api.calendly.com';
 const CLIENT_ID = 'NduAR5y-GwU7_twUNp-UPac9Ia6i7glyL0g1ZRYfVwY';
 const CLIENT_SECRET = 'iFdVbDL4wZapXdOKJfvN0ENCF2I7fmZWjdc4YRJCExM';
 const WEBHOOK_SIGNING_KEY = 'CBs2vTzkwtxKhBLVtflHt_rVZXs4n8mNV_TBtaXU2kA';
-const REDIRECT_URI = window.location.origin + '/calendly-auth-callback';
+const REDIRECT_URI = 'https://untapped-homes.vercel.app/calendly-auth-callback';
 
 // Store tokens in localStorage
 const saveTokens = (tokens) => {
