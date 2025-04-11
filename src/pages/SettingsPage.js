@@ -3,7 +3,7 @@ import CalendlyAuthButton from '../components/CalendlyAuthButton';
 
 const SettingsPage = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-white">
       <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
       
       <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -13,7 +13,7 @@ const SettingsPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-medium">Calendly</h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-700">
                 Connect your Calendly account to allow customers to schedule demos directly.
               </p>
             </div>

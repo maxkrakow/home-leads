@@ -390,7 +390,7 @@ function DashboardPage({ currentUser }) {
           </div>
           
           {/* Main content area */}
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-6 bg-white">
             {activeTab === 'dashboard' && (
               <div>
                 {/* Dashboard content */}
@@ -464,12 +464,9 @@ function DashboardPage({ currentUser }) {
                         {leads.map((lead) => (
                           <tr key={lead.id} className="hover:bg-[#2d3748]">
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <img className="h-10 w-10 rounded-full" src={lead.imageUrl} alt="" />
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-white">{lead.name}</div>
-                                  <div className="text-sm text-gray-400">{lead.leadType}</div>
-                                </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-white">{lead.name}</div>
+                                <div className="text-sm text-gray-400">{lead.leadType}</div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">

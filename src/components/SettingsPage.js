@@ -120,46 +120,46 @@ function SettingsPage({ currentUser }) {
         </div>
       )}
 
-      <div className="bg-gray-800 shadow rounded-lg p-6 ring-1 ring-white/10">
+      <div className="bg-white shadow rounded-lg p-6 ring-1 ring-gray-200">
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
-            <h2 className="text-lg font-medium text-white mb-4">Profile Information</h2>
+            <h2 className="text-lg font-medium text-gray-700 mb-4">Profile Information</h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input
                   type="text"
                   name="name"
                   value={profile.name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                 <input
                   type="email"
                   value={profile.email}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-700 rounded-md bg-gray-800 text-gray-400"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-500"
                 />
                 <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
                   name="phone"
                   value={profile.phone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-white"
+                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                 />
               </div>
             </div>
           </div>
 
           <div className="mb-6">
-            <h2 className="text-lg font-medium text-white mb-4">Notification Preferences</h2>
+            <h2 className="text-lg font-medium text-gray-700 mb-4">Notification Preferences</h2>
             <div className="space-y-4">
               <div className="flex items-start">
                 <div className="flex items-center h-5">
@@ -169,12 +169,12 @@ function SettingsPage({ currentUser }) {
                     type="checkbox"
                     checked={profile.notificationPreferences.email}
                     onChange={handleNotificationChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-500 rounded bg-gray-700"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded bg-white"
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="email" className="font-medium text-gray-300">Email Notifications</label>
-                  <p className="text-gray-400">Receive lead notifications via email</p>
+                  <label htmlFor="email" className="font-medium text-gray-700">Email Notifications</label>
+                  <p className="text-gray-500">Receive lead notifications via email</p>
                 </div>
               </div>
               <div className="flex items-start">
@@ -185,18 +185,18 @@ function SettingsPage({ currentUser }) {
                     type="checkbox"
                     checked={profile.notificationPreferences.sms}
                     onChange={handleNotificationChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-500 rounded bg-gray-700"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded bg-white"
                   />
                 </div>
                 <div className="ml-3 text-sm">
-                  <label htmlFor="sms" className="font-medium text-gray-300">SMS Notifications</label>
-                  <p className="text-gray-400">Receive lead notifications via text message</p>
+                  <label htmlFor="sms" className="font-medium text-gray-700">SMS Notifications</label>
+                  <p className="text-gray-500">Receive lead notifications via text message</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-700 pt-6">
+          <div className="border-t border-gray-200 pt-6">
             <button
               type="submit"
               disabled={saving}

@@ -111,9 +111,9 @@ const LeadsPage = () => {
 
   // Match the UI in the second picture exactly
   return (
-    <div className="flex h-screen bg-[#111827]">
+    <div className="flex h-screen bg-white">
       {/* Sidebar */}
-      <div className="w-64 bg-[#0e1525] flex flex-col">
+      <div className="w-64 bg-gray-100 flex flex-col">
         <div className="p-4">
           <img src="/logo.png" alt="Untapped Homes" className="h-8 w-auto" />
         </div>
@@ -153,7 +153,7 @@ const LeadsPage = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Search bar */}
-        <div className="bg-[#111827] flex items-center p-4 border-b border-[#1e2639]">
+        <div className="bg-white flex items-center p-4 border-b border-gray-200">
           <div className="relative flex-1">
             <input
               type="text"
@@ -168,7 +168,7 @@ const LeadsPage = () => {
         
         {/* Main content */}
         {activeTab === 'leads' ? (
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-6 bg-white">
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-xl font-semibold text-white">Your Leads</h1>
               <button 
@@ -183,7 +183,7 @@ const LeadsPage = () => {
             </div>
             
             <div className="mb-4">
-              <button className="flex items-center text-sm text-gray-400 bg-[#1e2639] rounded px-3 py-1">
+              <button className="flex items-center text-sm text-gray-400 bg-white rounded px-3 py-1">
                 <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
                 </svg>
@@ -191,7 +191,7 @@ const LeadsPage = () => {
               </button>
             </div>
             
-            <div className="bg-[#1e2639] rounded-lg overflow-hidden">
+            <div className="bg-white rounded-lg overflow-hidden">
               <table className="min-w-full divide-y divide-gray-700">
                 <thead>
                   <tr>
@@ -203,16 +203,13 @@ const LeadsPage = () => {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 bg-[#1e2639]">
+                <tbody className="divide-y divide-gray-200 bg-white">
                   {leads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-[#2d3748]">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <img className="h-10 w-10 rounded-full" src={lead.imageUrl} alt="" />
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-white">{lead.name}</div>
-                            <div className="text-sm text-gray-400">{lead.leadType}</div>
-                          </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{lead.name}</div>
+                          <div className="text-sm text-gray-600">{lead.leadType}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

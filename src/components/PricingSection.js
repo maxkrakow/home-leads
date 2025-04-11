@@ -6,7 +6,7 @@ const tiers = [
     name: 'Basic',
     id: 'tier-basic',
     href: '#',
-    priceMonthly: '$99',
+    priceMonthly: '$249',
     description: 'Perfect for service providers focusing on a single county with moderate new home sales.',
     features: [
       'Access to 1 county',
@@ -22,7 +22,7 @@ const tiers = [
     name: 'Professional',
     id: 'tier-professional',
     href: '#',
-    priceMonthly: '$249',
+    priceMonthly: '$499',
     description: 'Ideal for businesses serving multiple counties and needing more comprehensive data.',
     features: [
       'Access to 3 counties',
@@ -39,7 +39,7 @@ const tiers = [
     name: 'Enterprise',
     id: 'tier-enterprise',
     href: '#',
-    priceMonthly: '$499',
+    priceMonthly: 'Contact Sales',
     description: 'For established businesses covering large regions with high-volume lead needs.',
     features: [
       'Access to 10+ counties',
@@ -97,7 +97,9 @@ export default function PricingSection() {
                 <p className="mt-4 text-sm leading-6 text-gray-600">{tier.description}</p>
                 <p className="mt-6 flex items-baseline gap-x-1">
                   <span className="text-4xl font-bold tracking-tight text-gray-900">{tier.priceMonthly}</span>
-                  <span className="text-sm font-semibold leading-6 text-gray-600">/month</span>
+                  {tier.priceMonthly !== 'Contact Sales' && (
+                    <span className="text-sm font-semibold leading-6 text-gray-600">/month</span>
+                  )}
                 </p>
                 <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-gray-600">
                   {tier.features.map((feature) => (

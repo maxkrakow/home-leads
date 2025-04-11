@@ -399,7 +399,7 @@ const DashboardPage = () => {
       <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog as="div" className="relative z-50 xl:hidden" onClose={setSidebarOpen}>
-            <div className="fixed inset-0 bg-gray-900/80" />
+            <div className="fixed inset-0 bg-white/80" />
 
             <div className="fixed inset-0 z-50 flex">
               <Transition.Child
@@ -411,7 +411,7 @@ const DashboardPage = () => {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <Dialog.Panel className="flex w-full max-w-xs flex-1 flex-col bg-gray-900">
+                <Dialog.Panel className="flex w-full max-w-xs flex-1 flex-col bg-white">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -421,7 +421,7 @@ const DashboardPage = () => {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                   >
-                    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 ring-1 ring-white/10">
+                    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 ring-1 ring-gray-200">
                       <div className="flex h-16 shrink-0 items-center">
                         <img
                           className="h-8 w-auto"
@@ -442,8 +442,8 @@ const DashboardPage = () => {
                                     }}
                                     className={classNames(
                                       item.current
-                                        ? 'bg-gray-800 text-white'
-                                        : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                                        ? 'bg-gray-200 text-gray-900'
+                                        : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900',
                                       'group flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6'
                                     )}
                                   >
@@ -457,7 +457,7 @@ const DashboardPage = () => {
                           <li className="-mx-6 mt-auto">
                             <button
                               onClick={handleSignOut}
-                              className="flex w-full items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
+                              className="flex w-full items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-200"
                             >
                               <img
                                 className="h-8 w-8 rounded-full bg-gray-800"
@@ -481,7 +481,7 @@ const DashboardPage = () => {
         {/* Static sidebar for desktop */}
         <div className="hidden xl:fixed xl:inset-y-0 xl:z-50 xl:flex xl:w-72 xl:flex-col">
           {/* Sidebar component */}
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-black/10 px-6 ring-1 ring-white/5">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 ring-1 ring-gray-200">
             <div className="flex h-16 shrink-0 items-center">
               <img
                 className="h-8 w-auto"
@@ -499,8 +499,8 @@ const DashboardPage = () => {
                           onClick={() => setActiveTab(item.id)}
                           className={classNames(
                             item.current
-                              ? 'bg-gray-800 text-white'
-                              : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                              ? 'bg-gray-200 text-gray-900'
+                              : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900',
                             'group flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6'
                           )}
                         >
@@ -514,7 +514,7 @@ const DashboardPage = () => {
                 <li className="-mx-6 mt-auto">
                   <button
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-gray-800"
+                    className="flex w-full items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-200"
                   >
                     <img
                       className="h-8 w-8 rounded-full bg-gray-800"
@@ -532,8 +532,8 @@ const DashboardPage = () => {
 
         <div className="xl:pl-72">
           {/* Sticky search header */}
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-white/5 bg-gray-900 px-4 shadow-sm sm:px-6 lg:px-8">
-            <button type="button" className="-m-2.5 p-2.5 text-white xl:hidden" onClick={() => setSidebarOpen(true)}>
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-6 border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+            <button type="button" className="-m-2.5 p-2.5 text-gray-500 xl:hidden" onClick={() => setSidebarOpen(true)}>
               <span className="sr-only">Open sidebar</span>
               <Bars3Icon className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -550,7 +550,7 @@ const DashboardPage = () => {
                   />
                   <input
                     id="search-field"
-                    className="block h-full w-full border-0 bg-transparent py-0 pl-8 pr-0 text-white focus:ring-0 sm:text-sm"
+                    className="block h-full w-full border-0 bg-transparent py-0 pl-8 pr-0 text-gray-500 focus:ring-0 sm:text-sm"
                     placeholder="Search..."
                     type="search"
                     name="search"
@@ -565,10 +565,10 @@ const DashboardPage = () => {
               <>
                 <header>
                   {/* Secondary navigation */}
-                  <nav className="flex overflow-x-auto border-b border-white/10 py-4">
+                  <nav className="flex overflow-x-auto border-b border-gray-200 py-4 bg-white">
                     <ul
                       role="list"
-                      className="flex min-w-full flex-none gap-x-6 px-4 text-sm font-semibold leading-6 text-gray-400 sm:px-6 lg:px-8"
+                      className="flex min-w-full flex-none gap-x-6 px-4 text-sm font-semibold leading-6 text-gray-600 sm:px-6 lg:px-8"
                     >
                       {secondaryNavigation.map((item) => (
                         <li key={item.name}>
@@ -581,19 +581,19 @@ const DashboardPage = () => {
                   </nav>
 
                   {/* Heading */}
-                  <div className="flex flex-col items-start justify-between gap-x-8 gap-y-4 bg-gray-700/10 px-4 py-4 sm:flex-row sm:items-center sm:px-6 lg:px-8">
+                  <div className="flex flex-col items-start justify-between gap-x-8 gap-y-4 bg-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:px-6 lg:px-8">
                     <div>
                       <div className="flex items-center gap-x-3">
                         <div className="flex-none rounded-full bg-green-400/10 p-1 text-green-400">
                           <div className="h-2 w-2 rounded-full bg-current" />
                         </div>
-                        <h1 className="flex gap-x-3 text-base font-semibold leading-7 text-white">
+                        <h1 className="flex gap-x-3 text-base font-semibold leading-7 text-gray-900">
                           <span>Untapped Homes</span>
                           <span className="text-gray-600">/</span>
                           <span>Dashboard</span>
                         </h1>
                       </div>
-                      <p className="mt-2 text-xs leading-6 text-gray-400">Manage your leads and track your performance</p>
+                      <p className="mt-2 text-xs leading-6 text-gray-600">Manage your leads and track your performance</p>
                     </div>
                     <div className="order-first flex-none rounded-full bg-indigo-400/10 px-2 py-1 text-xs font-medium text-indigo-400 ring-1 ring-inset ring-indigo-400/30 sm:order-none">
                       Premium Plan
@@ -601,18 +601,18 @@ const DashboardPage = () => {
                   </div>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-1 bg-gray-700/10 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 bg-white sm:grid-cols-3">
                     {stats.map((stat, statIdx) => (
                       <div
                         key={stat.name}
                         className={classNames(
                           statIdx > 0 ? 'sm:border-l' : '',
-                          'border-t border-white/5 px-4 py-6 sm:px-6 lg:px-8'
+                          'border-t border-gray-200 px-4 py-6 sm:px-6 lg:px-8'
                         )}
                       >
-                        <p className="text-sm font-medium leading-6 text-gray-400">{stat.name}</p>
+                        <p className="text-sm font-medium leading-6 text-gray-600">{stat.name}</p>
                         <p className="mt-2 flex items-baseline gap-x-2">
-                          <span className="text-4xl font-semibold tracking-tight text-white">{stat.value}</span>
+                          <span className="text-4xl font-semibold tracking-tight text-gray-900">{stat.value}</span>
                           {stat.unit ? <span className="text-sm text-gray-400">{stat.unit}</span> : null}
                           
                           {/* Add Counties button for the Active Counties stat */}
@@ -633,8 +633,8 @@ const DashboardPage = () => {
                 </header>
 
                 {/* Activity list */}
-                <div className="border-t border-white/10 pt-11">
-                  <h2 className="px-4 text-base font-semibold leading-7 text-white sm:px-6 lg:px-8">Latest leads</h2>
+                <div className="border-t border-gray-200 pt-11 bg-white">
+                  <h2 className="px-4 text-base font-semibold leading-7 text-gray-900 sm:px-6 lg:px-8">Latest leads</h2>
                   <table className="mt-6 w-full whitespace-nowrap text-left">
                     <colgroup>
                       <col className="w-full sm:w-4/12" />
@@ -643,7 +643,7 @@ const DashboardPage = () => {
                       <col className="lg:w-1/12" />
                       <col className="lg:w-1/12" />
                     </colgroup>
-                    <thead className="border-b border-white/10 text-sm leading-6 text-white">
+                    <thead className="border-b border-gray-200 text-sm leading-6 text-gray-900">
                       <tr>
                         <th scope="col" className="py-2 pl-4 pr-8 font-semibold sm:pl-6 lg:pl-8">
                           Buyer
@@ -662,23 +662,18 @@ const DashboardPage = () => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-gray-200 bg-white">
                       {getActivityItems().map((item, index) => (
                         <tr key={index}>
                           <td className="py-4 pl-4 pr-8 sm:pl-6 lg:pl-8">
-                            <div className="flex items-center">
-                              <div className="h-10 w-10 flex-shrink-0">
-                                <img className="h-10 w-10 rounded-full" src={item.user.imageUrl} alt="" />
-                              </div>
-                              <div className="ml-4">
-                                <div className="font-medium text-white">{item.user.name}</div>
-                                <div className="text-gray-400">{item.user.phone}</div>
-                              </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{item.user.name}</div>
+                              <div className="text-sm text-gray-600">{item.user.phone}</div>
                             </div>
                           </td>
                           <td className="hidden py-4 pl-0 pr-4 sm:table-cell sm:pr-8">
-                            <div className="text-white">{item.location.address}</div>
-                            <div className="text-gray-400">{item.location.county} County</div>
+                            <div className="text-sm text-gray-900">{item.location.address}</div>
+                            <div className="text-sm text-gray-600">{item.location.county} County</div>
                           </td>
                           <td className="py-4 pl-0 pr-4 text-sm leading-6 sm:pr-8 lg:pr-20">
                             <div className="flex items-center justify-end gap-x-2 sm:justify-start">
@@ -690,7 +685,7 @@ const DashboardPage = () => {
                               </span>
                             </div>
                           </td>
-                          <td className="hidden py-4 pl-0 pr-8 text-sm leading-6 text-white md:table-cell lg:pr-20">
+                          <td className="hidden py-4 pl-0 pr-8 text-sm leading-6 text-gray-900 md:table-cell lg:pr-20">
                             {item.value}
                           </td>
                           <td className="hidden py-4 pl-0 pr-4 text-right text-sm leading-6 text-gray-400 sm:table-cell sm:pr-6 lg:pr-8">
@@ -712,13 +707,13 @@ const DashboardPage = () => {
             {activeTab === 'leads' && (
               <div className="px-4 py-6 sm:px-6 lg:px-8">
                 <div className="mb-6">
-                  <h1 className="text-xl font-semibold text-white">Your Leads</h1>
+                  <h1 className="text-xl font-semibold text-gray-900">Your Leads</h1>
                 </div>
                 
                 {/* Leads table styled exactly like in LeadsPage.js */}
-                <div className="bg-[#1e2639] rounded-lg overflow-hidden">
+                <div className="bg-white rounded-lg overflow-hidden">
                   {leads.length > 0 ? (
-                    <table className="min-w-full divide-y divide-gray-700">
+                    <table className="min-w-full divide-y divide-gray-200">
                       <thead>
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
@@ -729,7 +724,7 @@ const DashboardPage = () => {
                           <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider"></th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-700 bg-[#1e2639]">
+                      <tbody className="divide-y divide-gray-200 bg-white">
                         {leads.map((lead) => {
                           // Format the lead data
                           const formattedLead = {
@@ -746,23 +741,20 @@ const DashboardPage = () => {
                           };
 
                           return (
-                            <tr key={lead.id} className="hover:bg-[#2d3748]">
+                            <tr key={lead.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <img className="h-10 w-10 rounded-full" src={formattedLead.imageUrl} alt="" />
-                                  <div className="ml-4">
-                                    <div className="text-sm font-medium text-white">{formattedLead.name}</div>
-                                    <div className="text-sm text-gray-400">{formattedLead.leadType}</div>
-                                  </div>
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900">{formattedLead.name}</div>
+                                  <div className="text-sm text-gray-600">{formattedLead.leadType}</div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-white">{formattedLead.email}</div>
-                                <div className="text-sm text-gray-400">{formattedLead.phone}</div>
+                                <div className="text-sm text-gray-900">{formattedLead.email}</div>
+                                <div className="text-sm text-gray-600">{formattedLead.phone}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-white">{formattedLead.location}</div>
-                                <div className="text-sm text-gray-400">{formattedLead.county}</div>
+                                <div className="text-sm text-gray-900">{formattedLead.location}</div>
+                                <div className="text-sm text-gray-600">{formattedLead.county}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -775,7 +767,7 @@ const DashboardPage = () => {
                                   {formattedLead.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {formattedLead.value}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -787,7 +779,7 @@ const DashboardPage = () => {
                       </tbody>
                     </table>
                   ) : (
-                    <div className="p-6 text-center text-gray-400">
+                    <div className="p-6 text-center text-gray-600">
                       No leads found. Subscribe to counties to start receiving leads.
                     </div>
                   )}
@@ -797,7 +789,7 @@ const DashboardPage = () => {
 
             {activeTab === 'settings' && (
               <div className="px-4 py-6 sm:px-6 lg:px-8">
-                <h1 className="text-2xl font-semibold text-white mb-6">Settings</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 mb-6">Settings</h1>
                 <SettingsPage currentUser={currentUser} />
               </div>
             )}
@@ -817,7 +809,7 @@ const DashboardPage = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-gray-900/80 transition-opacity" />
+            <div className="fixed inset-0 bg-white/80 transition-opacity" />
           </Transition.Child>
 
           <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -831,7 +823,7 @@ const DashboardPage = () => {
                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
-                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                   <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                     <button
                       type="button"
@@ -839,16 +831,16 @@ const DashboardPage = () => {
                       onClick={() => setIsSubscriptionModalOpen(false)}
                     >
                       <span className="sr-only">Close</span>
-                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      <XMarkIcon className="h-6 w-6 text-gray-600" aria-hidden="true" />
                     </button>
                   </div>
                   <div>
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-white">
+                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
                         Manage County Subscriptions
                       </Dialog.Title>
                       <div className="mt-4">
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-gray-600">
                           Select counties to receive leads from. You'll get instant access to all leads in your subscribed counties.
                         </p>
                       </div>
@@ -856,13 +848,13 @@ const DashboardPage = () => {
                   </div>
 
                   <div className="mt-6">
-                    <div className="text-sm font-medium text-white mb-2">Your Current Subscriptions</div>
+                    <div className="text-sm font-medium text-gray-600 mb-2">Your Current Subscriptions</div>
                     {subscribedCounties.length === 0 ? (
-                      <p className="text-sm text-gray-400">You are not subscribed to any counties yet.</p>
+                      <p className="text-sm text-gray-600">You are not subscribed to any counties yet.</p>
                     ) : (
                       <div className="flex flex-wrap gap-2 mb-4">
                         {subscribedCounties.map(county => (
-                          <span key={county} className="inline-flex items-center rounded-md bg-gray-700 px-2 py-1 text-xs font-medium text-white">
+                          <span key={county} className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
                             {county}
                             <button
                               type="button"
@@ -876,7 +868,7 @@ const DashboardPage = () => {
                       </div>
                     )}
 
-                    <div className="text-sm font-medium text-white mb-2">Available Counties</div>
+                    <div className="text-sm font-medium text-gray-600 mb-2">Available Counties</div>
                     <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                       {availableCounties
                         .filter(county => !subscribedCounties.includes(county))
@@ -894,9 +886,9 @@ const DashboardPage = () => {
                                   setSelectedCounties(prev => prev.filter(c => c !== county));
                                 }
                               }}
-                              className="h-4 w-4 rounded border-gray-600 text-indigo-600 focus:ring-indigo-500"
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                             />
-                            <label htmlFor={`county-${county}`} className="ml-2 text-sm text-gray-300">
+                            <label htmlFor={`county-${county}`} className="ml-2 text-sm text-gray-600">
                               {county}
                             </label>
                           </div>
@@ -919,7 +911,7 @@ const DashboardPage = () => {
                     <button
                       type="button"
                       onClick={() => setIsSubscriptionModalOpen(false)}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:mt-0 sm:w-auto"
+                      className="mt-3 inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-300 sm:mt-0 sm:w-auto"
                     >
                       Cancel
                     </button>
@@ -943,7 +935,7 @@ const DashboardPage = () => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-gray-900/80 transition-opacity" />
+            <div className="fixed inset-0 bg-white/80 transition-opacity" />
           </Transition.Child>
 
           <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -957,7 +949,7 @@ const DashboardPage = () => {
                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
-                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                   <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                     <button
                       type="button"
@@ -965,16 +957,16 @@ const DashboardPage = () => {
                       onClick={() => setIsConfirmationOpen(false)}
                     >
                       <span className="sr-only">Close</span>
-                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                      <XMarkIcon className="h-6 w-6 text-gray-600" aria-hidden="true" />
                     </button>
                   </div>
                   <div>
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-white">
+                      <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
                         Confirm Unsubscription
                       </Dialog.Title>
                       <div className="mt-4">
-                        <p className="text-sm text-gray-400">
+                        <p className="text-sm text-gray-600">
                           Are you sure you want to remove this county from your subscriptions?
                         </p>
                       </div>
@@ -992,7 +984,7 @@ const DashboardPage = () => {
                     <button
                       type="button"
                       onClick={() => setIsConfirmationOpen(false)}
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-gray-700 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:mt-0 sm:w-auto"
+                      className="mt-3 inline-flex w-full justify-center rounded-md bg-gray-200 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-300 sm:mt-0 sm:w-auto"
                     >
                       Cancel
                     </button>
