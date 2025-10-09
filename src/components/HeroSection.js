@@ -33,7 +33,8 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <h1 className="text-4xl sm:text-6xl font-bold leading-tight mb-6 text-gray-900">
-            Turn Your Community Into Your <em className="text-brand-600">Lead Pipeline</em>
+            Turn Your Community Into Your<br />
+            <em className="text-brand-600">Lead Pipeline</em>
           </h1>
           <p className="text-xl leading-relaxed text-gray-600 mb-8 max-w-4xl mx-auto">
             Our integrated approach combines two powerful strategies to maximize your lead generation: 
