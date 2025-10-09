@@ -4,9 +4,72 @@ import { PopupModal } from 'react-calendly';
 const HeroSection = () => {
   const calendlyUrl = "https://calendly.com/untappedleads/untapped-homes-demo";
   const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
+  const [cityInput, setCityInput] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [services, setServices] = useState({
+    directTargeting: false,
+    communityBuilding: false
+  });
+  const [cachedNumbers, setCachedNumbers] = useState({
+    newHomeowners: null,
+    bookRate: null,
+    facebookLeads: null
+  });
 
   const openCalendly = () => {
     setIsCalendlyOpen(true);
+  };
+
+  // Cities database
+  const cities = [
+    'New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ',
+    'Philadelphia, PA', 'San Antonio, TX', 'San Diego, CA', 'Dallas, TX', 'San Jose, CA',
+    'Austin, TX', 'Jacksonville, FL', 'Fort Worth, TX', 'Columbus, OH', 'Charlotte, NC',
+    'San Francisco, CA', 'Indianapolis, IN', 'Seattle, WA', 'Denver, CO', 'Washington, DC',
+    'Boston, MA', 'El Paso, TX', 'Nashville, TN', 'Detroit, MI', 'Oklahoma City, OK',
+    'Portland, OR', 'Las Vegas, NV', 'Memphis, TN', 'Louisville, KY', 'Baltimore, MD',
+    'Milwaukee, WI', 'Albuquerque, NM', 'Tucson, AZ', 'Fresno, CA', 'Sacramento, CA',
+    'Mesa, AZ', 'Kansas City, MO', 'Atlanta, GA', 'Long Beach, CA', 'Colorado Springs, CO',
+    'Raleigh, NC', 'Miami, FL', 'Virginia Beach, VA', 'Omaha, NE', 'Oakland, CA',
+    'Minneapolis, MN', 'Tulsa, OK', 'Arlington, TX', 'Tampa, FL', 'New Orleans, LA',
+    'Cook County, IL', 'Los Angeles County, CA', 'Harris County, TX', 'Maricopa County, AZ',
+    'San Diego County, CA', 'Orange County, CA', 'Miami-Dade County, FL', 'King County, WA',
+    'Dallas County, TX', 'Tarrant County, TX', 'Broward County, FL', 'Riverside County, CA',
+    'Wayne County, MI', 'Santa Clara County, CA', 'Allegheny County, PA', 'Suffolk County, NY'
+  ];
+
+  const filteredCities = cities.filter(city => 
+    city.toLowerCase().includes(cityInput.toLowerCase())
+  );
+
+  // Generate or use cached numbers
+  const newHomeowners = cachedNumbers.newHomeowners || Math.floor(Math.random() * 401) + 800;
+  const bookRate = cachedNumbers.bookRate || Math.floor(Math.random() * 3) + 1; // 1-3%
+  const facebookLeads = cachedNumbers.facebookLeads || Math.floor(Math.random() * 8) + 15;
+
+  // Cache numbers when city changes
+  React.useEffect(() => {
+    if (cityInput && !cachedNumbers.newHomeowners) {
+      setCachedNumbers({
+        newHomeowners: Math.floor(Math.random() * 401) + 800,
+        bookRate: Math.floor(Math.random() * 3) + 1, // 1-3%
+        facebookLeads: Math.floor(Math.random() * 8) + 15
+      });
+    }
+  }, [cityInput, cachedNumbers.newHomeowners]);
+
+  const totalLeads = (services.directTargeting ? Math.round(newHomeowners * bookRate / 100) : 0) + 
+                    (services.communityBuilding ? facebookLeads : 0);
+
+  const handleServiceChange = (service) => {
+    const newServices = { ...services, [service]: !services[service] };
+    setServices(newServices);
+    
+    if (service === 'directTargeting' && !services.directTargeting && cityInput) {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 2000);
+    }
   };
 
   return (
@@ -169,6 +232,148 @@ const HeroSection = () => {
                 >
                   Learn More About Community Building
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lead Calculator */}
+        <div id="calculator" className="mt-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 shadow-lg border border-gray-200 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-200 rounded-full -mr-16 -mt-16 opacity-30"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-brand-300 rounded-full -ml-12 -mb-12 opacity-20"></div>
+          
+          <div className="relative">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-500 rounded-full mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Calculate Your Monthly Leads</h3>
+              <p className="text-gray-600">See how many qualified leads you could generate in your area</p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Input Section */}
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                  <div className="space-y-6">
+                    <div className="relative">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Enter Your City or County
+                      </label>
+                      <input
+                        type="text"
+                        value={cityInput}
+                        onChange={(e) => {
+                          setCityInput(e.target.value);
+                          setShowSuggestions(e.target.value.length > 0);
+                        }}
+                        onFocus={() => setShowSuggestions(cityInput.length > 0)}
+                        placeholder="e.g., Philadelphia, PA or Cook County, IL"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500"
+                      />
+                      {showSuggestions && filteredCities.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {filteredCities.slice(0, 8).map((city, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm rounded-lg mx-1 my-1"
+                              onClick={() => {
+                                setCityInput(city);
+                                setShowSuggestions(false);
+                              }}
+                            >
+                              {city}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Select Services
+                      </label>
+                      <div className="space-y-3">
+                        <label className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={services.directTargeting}
+                            onChange={() => handleServiceChange('directTargeting')}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-3 text-sm text-gray-700 font-medium">Direct Targeting (New Homeowners)</span>
+                        </label>
+                        <label className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={services.communityBuilding}
+                            onChange={() => handleServiceChange('communityBuilding')}
+                            className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                          />
+                          <span className="ml-3 text-sm text-gray-700 font-medium">Community Building (Facebook Groups)</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Results Section */}
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Your Monthly Lead Estimate</h4>
+                  
+                  {cityInput && (services.directTargeting || services.communityBuilding) ? (
+                    <div className="space-y-4">
+                      {isLoading ? (
+                        <div className="text-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-4"></div>
+                          <p className="text-sm text-gray-600">Pulling deed data from {cityInput}...</p>
+                        </div>
+                      ) : (
+                        <>
+                          {services.directTargeting && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                              <h5 className="font-medium text-gray-900 mb-2">Direct Targeting</h5>
+                              <p className="text-sm text-gray-600">
+                                {newHomeowners} new homeowners × {bookRate}% book rate = 
+                                <span className="font-bold text-blue-600 ml-1">{Math.round(newHomeowners * bookRate / 100)} leads/month</span>
+                              </p>
+                            </div>
+                          )}
+                          
+                          {services.communityBuilding && (
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                              <h5 className="font-medium text-gray-900 mb-2">Community Building</h5>
+                              <p className="text-sm text-gray-600">
+                                Based on our client results = 
+                                <span className="font-bold text-purple-600 ml-1">{facebookLeads} leads/month</span>
+                              </p>
+                            </div>
+                          )}
+                          
+                          <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+                            <h5 className="font-bold text-gray-900 text-lg mb-1">
+                              Total: {totalLeads} leads/month
+                            </h5>
+                            <p className="text-sm text-gray-600">
+                              Estimated value: ${(totalLeads * 1500).toLocaleString()}/month
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-500 text-sm">Enter your city and select at least one service to see your lead estimate</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

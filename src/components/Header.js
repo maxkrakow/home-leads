@@ -54,11 +54,11 @@ const Header = () => {
                 Features
               </a>
               <a 
-                href="#pricing" 
-                onClick={(e) => { e.preventDefault(); scrollToSection('pricing'); }}
+                href="#calculator" 
+                onClick={(e) => { e.preventDefault(); scrollToSection('calculator'); }}
                 className="text-base font-medium text-gray-700 hover:text-brand-500 transition-colors"
               >
-                Pricing
+                Lead Calculator
               </a>
               <a 
                 href="#testimonials" 
@@ -121,11 +121,11 @@ const Header = () => {
             Features
           </a>
           <a 
-            href="#pricing" 
-            onClick={(e) => { e.preventDefault(); scrollToSection('pricing'); setMobileMenuOpen(false); }}
+            href="#calculator" 
+            onClick={(e) => { e.preventDefault(); scrollToSection('calculator'); setMobileMenuOpen(false); }}
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-brand-500 hover:bg-gray-50"
           >
-            Pricing
+            Lead Calculator
           </a>
           <a 
             href="#testimonials" 
