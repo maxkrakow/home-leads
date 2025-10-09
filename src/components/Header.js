@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { currentUser } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -40,8 +38,8 @@ const Header = () => {
           {/* Logo section */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center text-decoration-none">
-              <img src="/logo.png" alt="Untapped Homes" className="h-10 w-auto" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Untapped Homes</span>
+              <img src="/logo.png" alt="Untapped Leads" className="h-10 w-auto" />
+              <span className="ml-2 text-xl font-bold text-gray-900">Untapped Leads</span>
             </Link>
           </div>
           
@@ -79,31 +77,15 @@ const Header = () => {
             </div>
           </div>
           
-          {/* Sign in/Get started buttons - desktop */}
+          {/* Demo booking button - desktop */}
           <div className="hidden lg:flex lg:items-center">
-            {currentUser ? (
-              <Link 
-                to="/dashboard" 
-                className="ml-8 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-brand-500 hover:bg-brand-600"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className="text-base font-medium text-gray-700 hover:text-brand-500"
-                >
-                  Sign in
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="ml-8 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-brand-500 hover:bg-brand-600"
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
+            <a 
+              href="#contact" 
+              onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}
+              className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-brand-500 hover:bg-brand-600"
+            >
+              Book a Demo
+            </a>
           </div>
           
           {/* Mobile menu button */}
@@ -161,33 +143,14 @@ const Header = () => {
           </a>
         </div>
         <div className="pt-4 pb-3 border-t border-gray-200">
-          <div className="px-5 space-y-3">
-            {currentUser ? (
-              <Link 
-                to="/dashboard" 
-                className="block w-full px-4 py-2 text-center font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-md shadow-sm"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className="block w-full px-4 py-2 text-center font-medium text-gray-700 hover:text-brand-500 bg-gray-50 hover:bg-gray-100 rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Sign in
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="block w-full px-4 py-2 text-center font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-md shadow-sm"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
+          <div className="px-5">
+            <a 
+              href="#contact" 
+              onClick={(e) => { e.preventDefault(); scrollToSection('contact'); setMobileMenuOpen(false); }}
+              className="block w-full px-4 py-2 text-center font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-md shadow-sm"
+            >
+              Book a Demo
+            </a>
           </div>
         </div>
       </div>
