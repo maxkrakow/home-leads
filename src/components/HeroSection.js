@@ -45,7 +45,7 @@ const HeroSection = () => {
 
   // Generate or use cached numbers
   const newHomeowners = cachedNumbers.newHomeowners || Math.floor(Math.random() * 401) + 800;
-  const bookRate = cachedNumbers.bookRate || Math.floor(Math.random() * 3) + 1; // 1-3%
+  const bookRate = cachedNumbers.bookRate || (Math.random() * 2 + 1.5).toFixed(1); // 1.5-3.5%
   const facebookLeads = cachedNumbers.facebookLeads || Math.floor(Math.random() * 8) + 15;
 
   // Cache numbers when city changes
@@ -53,7 +53,7 @@ const HeroSection = () => {
     if (cityInput && !cachedNumbers.newHomeowners) {
       setCachedNumbers({
         newHomeowners: Math.floor(Math.random() * 401) + 800,
-        bookRate: Math.floor(Math.random() * 3) + 1, // 1-3%
+        bookRate: (Math.random() * 2 + 1.5).toFixed(1), // 1.5-3.5%
         facebookLeads: Math.floor(Math.random() * 8) + 15
       });
     }
