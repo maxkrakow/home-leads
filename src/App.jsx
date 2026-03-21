@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const CALENDLY = 'https://calendly.com/lended/untapped-homes';
 
-// ─── Icons (inline SVGs to avoid dependency) ───
+// ─── Icons ───
 
 function CheckIcon({ className }) {
   return (
@@ -98,9 +98,9 @@ function Header() {
 
 function Hero() {
   const stats = [
-    { value: '50K+', label: 'Flyers Sent Monthly' },
-    { value: '3-5x', label: 'Avg. Response Rate vs. Cold Call' },
-    { value: '14 Days', label: 'From Signup to First Mailer' },
+    { value: '50K+', label: 'Mailers Sent Monthly' },
+    { value: '5-8x', label: 'Higher Conversion vs. Cold Leads' },
+    { value: '14 Days', label: 'From Signup to First Campaign' },
   ];
 
   return (
@@ -115,7 +115,7 @@ function Hero() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 mb-8">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-sm font-medium text-emerald-700">Off-market seller leads via direct mail</span>
+              <span className="text-sm font-medium text-emerald-700">New movers direct mail for home service businesses</span>
             </div>
           </motion.div>
 
@@ -125,8 +125,8 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Find Sellers{' '}
-            <span className="text-gradient">Before They List.</span>
+            Reach Homeowners{' '}
+            <span className="text-gradient">The Week They Move In.</span>
           </motion.h1>
 
           <motion.p
@@ -135,9 +135,9 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            We scrape public deed records, identify homeowners likely to sell, and run{' '}
+            We scrape deed records to find fresh move-ins in your service area, then send{' '}
             <span className="text-gray-900 font-semibold">targeted direct mail campaigns</span>{' '}
-            so motivated sellers come to you.
+            on your behalf — before they pick a competitor.
           </motion.p>
 
           <motion.div
@@ -152,7 +152,7 @@ function Hero() {
               rel="noopener noreferrer"
               className="group inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-4 text-base font-semibold text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
             >
-              Start Getting Leads
+              Start Getting New Customers
               <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </a>
             <a
@@ -192,17 +192,8 @@ function PainPoints() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      title: 'Wasting Time on MLS',
-      description: 'By the time a home hits the MLS, every investor in your market is already calling. You\'re competing on price with no edge.',
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-        </svg>
-      ),
-      title: 'Cold Calling Burnout',
-      description: 'Dialing hundreds of numbers a week, getting hung up on, and hoping someone picks up. It\'s exhausting and the conversion rate is terrible.',
+      title: 'Missing the Window',
+      description: 'New homeowners choose their service providers in the first 30 days. If you\'re not in front of them immediately, someone else is.',
     },
     {
       icon: (
@@ -210,8 +201,17 @@ function PainPoints() {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      title: 'Overpaying for Leads',
-      description: 'Buying shared lead lists that 10 other investors already have. You\'re paying premium prices for stale, recycled data.',
+      title: 'Wasting Money on Broad Ads',
+      description: 'Running Google or Facebook ads to your whole zip code means paying to reach people who already have a plumber, HVAC tech, or landscaper.',
+    },
+    {
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+        </svg>
+      ),
+      title: 'Competing for Loyal Customers',
+      description: 'Established homeowners already have their go-to providers. You\'re fighting an uphill battle trying to win them over from years of loyalty.',
     },
   ];
 
@@ -223,7 +223,7 @@ function PainPoints() {
             Sound Familiar?
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            Most real estate investors are stuck in the same cycle of ineffective lead generation.
+            Most home service businesses waste money marketing to people who don't need them.
           </p>
         </div>
 
@@ -257,7 +257,7 @@ function HowItWorks() {
     {
       num: '01',
       title: 'We Scrape Deed Records',
-      description: 'Our system pulls public deed data across your target counties — ownership length, equity position, property type, and more.',
+      description: 'Our system monitors public deed transfers across your service area — we know who just bought a home within days of closing.',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 11.625a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
@@ -266,8 +266,8 @@ function HowItWorks() {
     },
     {
       num: '02',
-      title: 'We Build Your List',
-      description: 'We filter homeowners by your criteria — absentee owners, long-term holds, high equity, pre-foreclosure, probate, and more.',
+      title: 'We Build Your New Mover List',
+      description: 'Fresh move-ins are filtered by your service area, home value, and property type. Every name on your list just moved and needs providers.',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
@@ -276,8 +276,8 @@ function HowItWorks() {
     },
     {
       num: '03',
-      title: 'We Mail Them',
-      description: 'Professional, personalized direct mail pieces go out to your list — handwritten-style letters, postcards, and follow-up sequences.',
+      title: 'We Design & Mail For You',
+      description: 'Professional, branded mailers go out automatically — introducing your business to every new homeowner in your area, week after week.',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
@@ -286,8 +286,8 @@ function HowItWorks() {
     },
     {
       num: '04',
-      title: 'Sellers Call You',
-      description: 'Motivated sellers respond directly to you. No cold calling, no competing with 20 other investors. These are exclusive, warm leads.',
+      title: 'New Customers Call You',
+      description: 'New homeowners who need your exact service see your mailer and reach out. No competition, no loyalty to overcome — just a new homeowner who needs help.',
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -304,10 +304,10 @@ function HowItWorks() {
             <span className="text-sm font-medium text-emerald-700">How It Works</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            From Deed Data to Your Phone Ringing
+            Be the First Call for Every New Homeowner
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            We handle the entire pipeline — data, targeting, design, printing, and mailing. You just answer the phone.
+            We handle the data, design, printing, and mailing. You just pick up the phone when new customers call.
           </p>
         </div>
 
@@ -339,31 +339,83 @@ function HowItWorks() {
   );
 }
 
-// ─── Comparison ───
+// ─── Why New Movers ───
 
-function Comparison() {
-  const withoutItems = [
-    'Buying shared lead lists 10 investors already have',
-    'Cold calling hundreds of numbers a week',
-    'Competing on MLS listings against every buyer',
-    'Spending hours pulling data yourself',
-    'Generic mailers with no targeting',
-  ];
-
-  const withItems = [
-    'Exclusive leads from deed-scraped homeowner data',
-    'Sellers call you — warm, motivated, off-market',
-    'First mover advantage before anyone lists',
-    'We handle all data, design, print, and mail',
-    'Hyper-targeted by equity, ownership length, and more',
-  ];
-
+function WhyNewMovers() {
   return (
     <section className="py-20 lg:py-28 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 mb-6">
+            <span className="text-sm font-medium text-emerald-700">Why New Movers</span>
+          </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Stop Chasing. Start Attracting.
+            The Highest-Intent Customers You'll Ever Find
+          </h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {[
+            {
+              stat: '80%',
+              title: 'Choose Providers in 30 Days',
+              description: 'New homeowners select their HVAC, plumber, electrician, and landscaper within the first month. If you\'re not there, someone else is.',
+            },
+            {
+              stat: '0',
+              title: 'Existing Loyalty to Overcome',
+              description: 'Unlike established homeowners, new movers don\'t have a "guy" yet. They\'re actively looking and ready to commit.',
+            },
+            {
+              stat: '3-5x',
+              title: 'Higher Close Rate',
+              description: 'New mover leads convert at 3-5x the rate of cold outreach because they have an immediate, real need for your services.',
+            },
+          ].map((item, i) => (
+            <motion.div
+              key={item.title}
+              className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="text-4xl font-extrabold text-emerald-600 mb-3">{item.stat}</div>
+              <h3 className="text-base font-bold text-gray-900 mb-2">{item.title}</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Comparison ───
+
+function Comparison() {
+  const withoutItems = [
+    'Running broad ads to people who already have providers',
+    'Paying for clicks from tire-kickers and price shoppers',
+    'Door knocking neighborhoods hoping someone needs you',
+    'Posting on social media and praying for leads',
+    'Waiting for word-of-mouth referrals to trickle in',
+  ];
+
+  const withItems = [
+    'Reaching homeowners the week they move in',
+    'Professional mailers arrive before competitors even know they exist',
+    'Every lead is a new homeowner actively looking for providers',
+    'Fully automated — we handle data, design, print, and mail',
+    'Consistent pipeline of new customers every single month',
+  ];
+
+  return (
+    <section className="py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+            Stop Hoping. Start Growing.
           </h2>
         </div>
 
@@ -415,18 +467,18 @@ function Comparison() {
 
 function Pricing() {
   const features = [
-    'Deed record scraping in your target counties',
-    'Custom homeowner list built to your criteria',
-    'Professional direct mail design',
+    'Deed record scraping across your service area',
+    'New mover list built and updated weekly',
+    'Professional, branded mailer design',
     'Printing, postage, and fulfillment included',
-    'Follow-up mail sequences',
+    'Automated weekly mail drops',
     'Dedicated tracking phone number',
-    'Monthly reporting on sends and responses',
+    'Monthly reporting on sends, responses, and ROI',
     'No long-term contracts — cancel anytime',
   ];
 
   return (
-    <section id="pricing" className="py-20 lg:py-28">
+    <section id="pricing" className="py-20 lg:py-28 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 mb-6">
@@ -436,7 +488,7 @@ function Pricing() {
             One Plan. No Surprises.
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            Everything you need to generate off-market seller leads through direct mail.
+            Everything you need to get your business in front of every new homeowner in your area.
           </p>
         </div>
 
@@ -454,7 +506,7 @@ function Pricing() {
             </div>
 
             <div className="text-center mb-8">
-              <h3 className="text-lg font-bold text-gray-900">Direct Mail Campaign</h3>
+              <h3 className="text-lg font-bold text-gray-900">New Mover Direct Mail</h3>
               <div className="mt-4 flex items-baseline justify-center gap-1">
                 <span className="text-5xl font-extrabold text-gray-900">$499</span>
                 <span className="text-gray-500">/mo</span>
@@ -476,7 +528,7 @@ function Pricing() {
 
             <div className="mb-6 py-3 px-4 rounded-xl bg-gray-50 border border-gray-100">
               <p className="text-xs text-gray-500 text-center">
-                <span className="text-gray-700 font-medium">Example:</span> 2,000 flyers/mo = $499 + $2,000 = <span className="text-emerald-700 font-semibold">$2,499/mo</span>
+                <span className="text-gray-700 font-medium">Example:</span> 1,500 flyers/mo = $499 + $1,500 = <span className="text-emerald-700 font-semibold">$1,999/mo</span>
               </p>
             </div>
 
@@ -495,35 +547,35 @@ function Pricing() {
   );
 }
 
-// ─── Results / Social Proof ───
+// ─── Results ───
 
 function Results() {
   const testimonials = [
     {
-      quote: 'Got 3 off-market deals in my first 60 days. One of them turned into a $40K wholesale assignment. The mailers pay for themselves.',
-      name: 'Marcus T.',
-      role: 'Wholesaler, Atlanta',
+      quote: 'We picked up 12 new recurring lawn care customers in our first 2 months. These are people who just moved in and had no landscaper — easiest close ever.',
+      name: 'Ryan M.',
+      role: 'Landscaping Company, Austin TX',
     },
     {
-      quote: 'I was cold calling 4 hours a day before this. Now sellers call me. My pipeline has never been this full.',
-      name: 'Jessica R.',
-      role: 'Fix & Flip Investor, Dallas',
+      quote: 'New homeowners actually want to hear from you. Our close rate on these leads is 3x what we get from Google Ads.',
+      name: 'Lisa P.',
+      role: 'HVAC Company, Charlotte NC',
     },
     {
-      quote: 'The targeting is insane. They found absentee owners with 20+ years of equity I never would have found on my own.',
-      name: 'David K.',
-      role: 'Buy & Hold Investor, Phoenix',
+      quote: 'We went from hoping the phone would ring to having a predictable stream of new customers every month. Best marketing spend we\'ve ever made.',
+      name: 'James W.',
+      role: 'Plumbing Company, Tampa FL',
     },
   ];
 
   const metrics = [
-    { value: '2-4%', label: 'Typical Response Rate' },
-    { value: '12-15x', label: 'Avg. ROI on Mail Spend' },
-    { value: '60 Days', label: 'To First Closed Deal (Avg.)' },
+    { value: '4-8%', label: 'Typical Response Rate' },
+    { value: '10-20x', label: 'Avg. ROI on Mailer Spend' },
+    { value: '30 Days', label: 'To See First New Customers' },
   ];
 
   return (
-    <section id="results" className="py-20 lg:py-28 bg-gray-50">
+    <section id="results" className="py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 mb-6">
@@ -570,22 +622,23 @@ function Results() {
 
 function BuiltFor() {
   const personas = [
-    { title: 'Wholesalers', description: 'Find motivated sellers and lock up contracts before anyone else knows the property exists.' },
-    { title: 'Fix & Flip Investors', description: 'Source off-market properties with built-in equity at prices that make your rehab numbers work.' },
-    { title: 'Buy & Hold Investors', description: 'Build your rental portfolio with off-market acquisitions at below-market prices.' },
-    { title: 'Real Estate Agents', description: 'Generate listing leads from homeowners thinking about selling but haven\'t listed yet.' },
-    { title: 'Land Investors', description: 'Target vacant land owners with long hold times who are ready to cash out.' },
+    { title: 'HVAC Companies', description: 'New homeowners need to learn their system, schedule maintenance, and find a tech they trust. Be the first one they call.' },
+    { title: 'Plumbers', description: 'Every new home comes with unfamiliar plumbing. From inspections to emergencies — be their go-to from day one.' },
+    { title: 'Landscapers', description: 'New yards need new care. Move-ins are looking for weekly mowing, seasonal cleanups, and irrigation setup immediately.' },
+    { title: 'Pest Control', description: 'New homeowners don\'t know the local pest situation. Preventative pest plans are an easy sell to fresh move-ins.' },
+    { title: 'Electricians', description: 'Smart home setup, panel upgrades, outlet additions — new homeowners have a long electrical to-do list.' },
+    { title: 'Roofers & Painters', description: 'Fresh move-ins quickly spot what needs fixing. Position yourself before they start Googling.' },
   ];
 
   return (
-    <section className="py-20 lg:py-28">
+    <section className="py-20 lg:py-28 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-            Built For Investors Who Want an Edge
+            Built for Home Service Businesses
           </h2>
           <p className="mt-4 text-lg text-gray-500">
-            Whether you wholesale, flip, or hold — if you need off-market deals, we build your pipeline.
+            If new homeowners need your service, we put you in front of them before anyone else.
           </p>
         </div>
 
@@ -637,41 +690,41 @@ function FAQItem({ q, a }) {
 function FAQ() {
   const faqs = [
     {
-      q: 'How do you get the homeowner data?',
-      a: 'We scrape publicly available deed records from county assessor databases. This includes ownership history, property details, equity estimates, and more. All data is public record.',
+      q: 'What kind of businesses is this for?',
+      a: 'Any home service business that benefits from reaching new homeowners — HVAC, plumbing, electrical, landscaping, pest control, roofing, painting, cleaning, pool service, and more.',
     },
     {
-      q: 'How quickly can I start receiving mailers?',
-      a: 'Most clients are live within 14 days of signing up. We spend the first week building your custom list and designing your mail pieces, then start sending.',
+      q: 'How do you know who just moved in?',
+      a: 'We scrape publicly available deed transfer records from county assessor databases. When a home changes ownership, we pick it up within days and add the new homeowner to your mailing list.',
     },
     {
-      q: 'What kind of response rate can I expect?',
-      a: 'Typical response rates are 2-4% on targeted direct mail campaigns. Because we hyper-target based on equity, ownership length, and distress indicators, our rates tend to be on the higher end.',
+      q: 'How quickly can I start?',
+      a: 'Most clients are live within 14 days. We spend the first week setting up your service area, designing your mailer, and building your initial new mover list.',
     },
     {
-      q: 'Do I share leads with other investors?',
-      a: 'No. Your mailing list is exclusive to you in your target area. We don\'t recycle or resell lists. The sellers who respond are calling your number only.',
+      q: 'Why is direct mail better than digital ads for new movers?',
+      a: 'New homeowners are overwhelmed with digital noise. A physical mailer arriving at their new home stands out. Plus, you reach them whether or not they\'re searching online — many new movers don\'t Google for services until they have an emergency.',
     },
     {
-      q: 'What kind of mail pieces do you send?',
-      a: 'We use a mix of handwritten-style letters, professional postcards, and follow-up sequences. Each piece is designed and tested to maximize response rates for real estate investors.',
+      q: 'Are the leads exclusive to me?',
+      a: 'Yes. We only work with one provider per service category per area. If you\'re the HVAC company in your zip codes, no other HVAC company gets those same new movers from us.',
     },
     {
-      q: 'Can I target specific types of homeowners?',
-      a: 'Absolutely. We can filter by absentee owners, high equity, long ownership tenure, pre-foreclosure, probate, vacant properties, and more. We build the list around your exact buy box.',
-    },
-    {
-      q: 'Is there a minimum commitment?',
-      a: 'No long-term contracts. You can cancel anytime. We recommend giving campaigns at least 90 days to see full results since direct mail compounds with follow-up sequences.',
+      q: 'What do the mailers look like?',
+      a: 'Professional, branded postcards or letters customized with your logo, offer, and contact info. We design everything — you just approve it. Each piece is optimized for response rates based on our testing data.',
     },
     {
       q: 'How many flyers should I send per month?',
-      a: 'Most of our successful clients send 1,000-3,000 pieces per month. We can help you determine the right volume based on your market and budget during onboarding.',
+      a: 'It depends on your service area. A typical market generates 500-2,000 new movers per month. We\'ll help you determine the right volume during onboarding based on your coverage area.',
+    },
+    {
+      q: 'Is there a contract?',
+      a: 'No long-term contracts. Month-to-month, cancel anytime. We recommend at least 90 days to see compounding results from repeat mail drops.',
     },
   ];
 
   return (
-    <section id="faq" className="py-20 lg:py-28 bg-gray-50">
+    <section id="faq" className="py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
@@ -697,10 +750,10 @@ function CTA() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 px-8 py-16 lg:px-16 lg:py-20 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">
-            Ready for Sellers to Come to You?
+            Be the First Call for Every New Homeowner
           </h2>
           <p className="mt-4 text-lg text-emerald-100 max-w-2xl mx-auto">
-            Stop chasing leads. Let us build your direct mail pipeline and put motivated sellers in your inbox every month.
+            New homeowners are moving into your service area every week. Make sure they know your name before anyone else's.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
@@ -717,8 +770,8 @@ function CTA() {
           <div className="mt-12 grid grid-cols-3 gap-6 max-w-2xl mx-auto">
             {[
               { step: '1', label: 'Book a call' },
-              { step: '2', label: 'We build your list' },
-              { step: '3', label: 'Sellers start calling' },
+              { step: '2', label: 'We set up your campaign' },
+              { step: '3', label: 'New customers start calling' },
             ].map((s) => (
               <div key={s.step} className="text-center">
                 <div className="w-8 h-8 rounded-full bg-white/20 text-white text-sm font-bold flex items-center justify-center mx-auto mb-2">
@@ -767,6 +820,7 @@ export default function App() {
       <Hero />
       <PainPoints />
       <HowItWorks />
+      <WhyNewMovers />
       <Comparison />
       <Pricing />
       <Results />
