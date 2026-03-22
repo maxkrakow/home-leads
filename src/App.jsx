@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const CALENDLY = 'https://calendly.com/lended/untapped-homes';
-
 // ─── Icons ───
 
 function CheckIcon({ className }) {
@@ -62,9 +60,7 @@ function Header() {
           <a href="#results" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Results</a>
           <a href="#faq" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">FAQ</a>
           <a
-            href={CALENDLY}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/get-started"
             className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
           >
             Get Started
@@ -87,7 +83,7 @@ function Header() {
           <a href="#pricing" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">Pricing</a>
           <a href="#results" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">Results</a>
           <a href="#faq" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">FAQ</a>
-          <a href={CALENDLY} target="_blank" rel="noopener noreferrer" className="block rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white">Get Started</a>
+          <a href="/get-started" className="block rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white">Get Started</a>
         </div>
       )}
     </header>
@@ -147,9 +143,7 @@ function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <a
-              href={CALENDLY}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/get-started"
               className="group inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-4 text-base font-semibold text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
             >
               Start Getting New Customers
@@ -533,9 +527,7 @@ function Pricing() {
             </div>
 
             <a
-              href={CALENDLY}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/get-started"
               className="block w-full rounded-full bg-emerald-600 py-4 text-center text-sm font-semibold text-white hover:bg-emerald-700 transition-all shadow-md shadow-emerald-200"
             >
               Get Started Today
@@ -757,9 +749,7 @@ function CTA() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href={CALENDLY}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/get-started"
               className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-emerald-700 hover:bg-emerald-50 transition-all"
             >
               Book a Free Strategy Call
