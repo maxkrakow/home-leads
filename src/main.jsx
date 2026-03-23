@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import GetStarted from './GetStarted.jsx'
+import Lander from './Lander.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/lander" element={<Lander />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
