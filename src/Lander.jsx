@@ -5,6 +5,20 @@ import { collection, addDoc, serverTimestamp, doc, setDoc, updateDoc, arrayUnion
 
 const CALENDLY = 'https://calendly.com/lended/untapped-homes';
 
+// Google Ads gtag
+const GTAG_ID = 'AW-17995555560';
+function loadGtag() {
+  if (document.querySelector(`script[src*="${GTAG_ID}"]`)) return;
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = `https://www.googletagmanager.com/gtag/js?id=${GTAG_ID}`;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', GTAG_ID);
+}
+
 const questions = [
   {
     id: 'contact',
@@ -159,6 +173,8 @@ export default function Lander() {
   const [sessionId] = useState(() => genSessionId());
   const [trackedSteps] = useState(() => new Set());
   const leadDocIdRef = useRef(null);
+
+  useEffect(() => { loadGtag(); }, []);
 
   const totalSteps = questions.length;
 
