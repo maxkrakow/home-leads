@@ -7,6 +7,7 @@ const CALENDLY = 'https://calendly.com/lended/untapped-homes';
 
 // Google Ads gtag
 const GTAG_ID = 'AW-17995555560';
+const LEAD_CONVERSION_SEND_TO = 'AW-17995555560/AvR-CPTE7Z0cEOjF-YRD';
 function loadGtag() {
   if (document.querySelector(`script[src*="${GTAG_ID}"]`)) return;
   const s = document.createElement('script');
@@ -17,6 +18,16 @@ function loadGtag() {
   function gtag(){window.dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', GTAG_ID);
+}
+function trackLeadConversion() {
+  if (typeof window === 'undefined') return;
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('event', 'conversion', {
+    send_to: LEAD_CONVERSION_SEND_TO,
+    value: 1.0,
+    currency: 'USD',
+  });
 }
 
 const questions = [
@@ -273,6 +284,7 @@ export default function Lander() {
       status: 'new',
     }).then((docRef) => {
       leadDocIdRef.current = docRef.id;
+      trackLeadConversion();
     }).catch((err) => {
       console.error('Error saving lead:', err);
     });
