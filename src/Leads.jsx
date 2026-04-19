@@ -133,8 +133,13 @@ export default function Leads() {
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Company Size</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service Area</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Budget</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timeline</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Current Marketing</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
@@ -142,7 +147,7 @@ export default function Leads() {
                   {leads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{formatDate(lead.createdAt)}</td>
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{lead.name || '—'}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{lead.fullName || lead.name || '—'}</td>
                       <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                         {lead.email ? (
                           <a href={`mailto:${lead.email}`} className="text-emerald-700 hover:underline">{lead.email}</a>
@@ -154,8 +159,13 @@ export default function Leads() {
                         ) : '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.company || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.serviceType || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.serviceArea || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.company_size || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.service_type || lead.serviceType || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.service_area || lead.serviceArea || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.monthly_budget || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.timeline || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{lead.current_marketing || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">{lead.source || '—'}</td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
                         <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-xs font-medium">
                           {lead.status || 'new'}
