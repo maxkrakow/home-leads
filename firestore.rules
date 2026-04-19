@@ -16,11 +16,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
     }
     
-    // Allow users to read leads that match their subscribed counties
+    // Leads: public create (landing page form), open read for /leads admin page
+    // (gated client-side by access code only — anyone with project id can query)
     match /leads/{leadId} {
-      allow read: if request.auth != null && 
-                   exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.counties.hasAny([resource.data.county]);
+      allow read: if true;
+      allow create: if true;
     }
     
     // Default deny all
