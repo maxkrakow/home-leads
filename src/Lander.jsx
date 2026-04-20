@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { db } from './firebase';
 import { collection, addDoc, serverTimestamp, doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 
-const CALENDLY = 'https://calendly.com/lended/untapped-homes';
+const CALENDLY = 'https://calendly.com/max-untappedhomes/30min?month=2026-04&date=2026-04-13';
 
 // Google Ads gtag
 const GTAG_ID = 'AW-17995555560';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PopupModal } from 'react-calendly';
 
 const ContactSection = () => {
-  const calendlyUrl = "https://calendly.com/untappedleads/untapped-homes-demo";
+  const calendlyUrl = "https://calendly.com/max-untappedhomes/30min?month=2026-04&date=2026-04-13";
   const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
 
   const openCalendly = () => {
