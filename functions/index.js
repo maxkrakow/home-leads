@@ -91,8 +91,50 @@ async function writeSubscriptionSummary(stripe, uid, subscription) {
     cancelAtPeriodEnd: !!subscription.cancel_at_period_end,
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
+
+  // Also pull the customer's default payment method inline so the Payment
+  // tab can render "Visa •••• 4242" immediately without waiting for a
+  // customer.updated webhook.
+  try {
+    const pm = await readDefaultPaymentMethod(stripe, subscription.customer, subscription.default_payment_method);
+    if (pm) patch.paymentMethod = pm;
+  } catch (e) {
+    console.warn("readDefaultPaymentMethod failed:", e.message);
+  }
+
   await db.collection("clients").doc(uid).set(patch, { merge: true });
   return patch;
+}
+
+// Best-effort: return { brand, last4 } for the customer's default payment
+// method. Tries the subscription's own default first, then the customer's
+// invoice_settings default, then the first payment method on file.
+async function readDefaultPaymentMethod(stripe, customerId, subDefaultPm) {
+  const summarize = (pm) => {
+    if (!pm) return null;
+    const c = pm.card || {};
+    return { brand: c.brand || null, last4: c.last4 || null, expMonth: c.exp_month || null, expYear: c.exp_year || null };
+  };
+
+  if (subDefaultPm && typeof subDefaultPm === "string") {
+    const pm = await stripe.paymentMethods.retrieve(subDefaultPm).catch(() => null);
+    if (pm) return summarize(pm);
+  }
+  if (!customerId) return null;
+
+  const customer = await stripe.customers.retrieve(customerId).catch(() => null);
+  const invoiceDefault = customer?.invoice_settings?.default_payment_method;
+  if (invoiceDefault && typeof invoiceDefault === "string") {
+    const pm = await stripe.paymentMethods.retrieve(invoiceDefault).catch(() => null);
+    if (pm) return summarize(pm);
+  }
+  if (invoiceDefault && typeof invoiceDefault === "object") {
+    return summarize(invoiceDefault);
+  }
+
+  const list = await stripe.paymentMethods.list({ customer: customerId, type: "card", limit: 1 }).catch(() => null);
+  if (list?.data?.[0]) return summarize(list.data[0]);
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
