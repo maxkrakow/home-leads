@@ -9,6 +9,7 @@ import {
   sendSignInLinkToEmail,
   signInWithEmailLink,
   isSignInWithEmailLink,
+  signInAnonymously,
   signOut as fbSignOut,
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
@@ -35,6 +36,11 @@ export function PortalAuthProvider({ children }) {
   //      into clients/{uid} so subsequent reads are cheap.
   const resolveClient = useCallback(async (u) => {
     if (!u) return null;
+    // Demo mode users are anonymous — no Firestore doc, no writes. Shell reads
+    // demoData.js when isDemo is true.
+    const inDemo = typeof window !== "undefined" && window.sessionStorage.getItem("uh_demo_mode") === "1";
+    if (u.isAnonymous || inDemo) return null;
+
     const byUid = await getDoc(doc(db, "clients", u.uid));
     if (byUid.exists()) return { id: byUid.id, ...byUid.data() };
 
@@ -130,11 +136,25 @@ export function PortalAuthProvider({ children }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    try { window.sessionStorage.removeItem("uh_demo_mode"); } catch {}
     await fbSignOut(auth);
   }, []);
 
+  // Instant demo access: signs in anonymously and flags this browser tab as
+  // the demo user. The dashboard reads the flag and swaps in fake data.
+  // Anonymous auth has to be enabled in the Firebase console once.
+  const signInAsDemo = useCallback(async () => {
+    window.sessionStorage.setItem("uh_demo_mode", "1");
+    await signInAnonymously(auth);
+  }, []);
+
   const isAdmin = Boolean(user?.email && ADMIN_EMAILS.has(user.email.toLowerCase()));
-  const isDemo = user?.email?.toLowerCase() === DEMO_EMAIL;
+  // Demo mode is set when the user explicitly clicked "Try demo" — checked via
+  // sessionStorage, or when the signed-in email literally matches DEMO_EMAIL
+  // (for anyone who does provision that mailbox).
+  const isDemo =
+    user?.email?.toLowerCase() === DEMO_EMAIL ||
+    (typeof window !== "undefined" && window.sessionStorage.getItem("uh_demo_mode") === "1");
 
   return (
     <PortalAuthContext.Provider
@@ -145,6 +165,7 @@ export function PortalAuthProvider({ children }) {
         loading,
         linkError,
         sendLink,
+        signInAsDemo,
         signOut,
         isAdmin,
         isDemo,

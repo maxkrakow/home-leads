@@ -1,13 +1,13 @@
 // Passwordless email login. User enters email, gets a sign-in link.
 import React, { useState } from "react";
 import { usePortalAuth } from "./portalAuth";
-import { DEMO_EMAIL } from "../firebase";
 
 export default function PortalLogin() {
-  const { sendLink, linkError } = usePortalAuth();
+  const { sendLink, linkError, signInAsDemo } = usePortalAuth();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [error, setError] = useState(null);
+  const [demoBusy, setDemoBusy] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -21,6 +21,23 @@ export default function PortalLogin() {
       console.error(err);
       setError(err.message || "Could not send the link. Try again.");
       setStatus("error");
+    }
+  };
+
+  const openDemo = async () => {
+    setDemoBusy(true);
+    setError(null);
+    try {
+      await signInAsDemo();
+    } catch (err) {
+      console.error(err);
+      // Anonymous auth might not be enabled — surface a specific hint.
+      const msg = /operation-not-allowed/i.test(String(err?.code || err?.message || ""))
+        ? "Anonymous sign-in isn't enabled yet — turn it on in Firebase console → Authentication → Sign-in method → Anonymous."
+        : (err.message || "Could not open the demo. Try again.");
+      setError(msg);
+    } finally {
+      setDemoBusy(false);
     }
   };
 
@@ -71,9 +88,17 @@ export default function PortalLogin() {
             >
               {status === "sending" ? "Sending link…" : "Send sign-in link"}
             </button>
-            <p className="text-[11px] text-gray-400 text-center">
-              Preview the portal with the demo account: <button type="button" onClick={() => setEmail(DEMO_EMAIL)} className="underline">{DEMO_EMAIL}</button>
-            </p>
+            <div className="pt-3 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={openDemo}
+                disabled={demoBusy}
+                className="w-full rounded-full border border-gray-300 bg-white py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {demoBusy ? "Opening demo…" : "Preview the portal (demo mode)"}
+              </button>
+              <p className="text-[11px] text-gray-400 text-center mt-2">Fake data — nothing gets saved.</p>
+            </div>
           </form>
         )}
       </div>
