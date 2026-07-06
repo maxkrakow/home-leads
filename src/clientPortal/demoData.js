@@ -5,7 +5,7 @@
 export const demoClient = {
   id: "demo-untappedhomes",
   legalName: "Sam's Home Services LLC",
-  dbaName: "Sam's",
+  dbaName: "Sam's Home Services",
   contactName: "Sam Reynolds",
   phone: "5164553535",
   email: "demo@untappedhomes.com",
