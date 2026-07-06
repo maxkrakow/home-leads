@@ -130,6 +130,29 @@ export const demoSkipTrace = {
   lastPull: new Date("2026-06-20"),
 };
 
+export const demoInvoices = [
+  {
+    id: "in_demo_flyer_july",
+    description: "Flyer charges — Roofing + Coating July Drop",
+    status: "open",
+    amountDue: 200000, // $2,000.00 in cents
+    amountPaid: 0,
+    hostedInvoiceUrl: "#",
+    created: new Date("2026-07-04"),
+    metadata: { campaignName: "Roofing + Coating — July Drop" },
+  },
+  {
+    id: "in_demo_sub_june",
+    description: "Untapped Homes — Direct Mail Subscription",
+    status: "paid",
+    amountDue: 49900,
+    amountPaid: 49900,
+    hostedInvoiceUrl: "#",
+    created: new Date("2026-06-01"),
+    metadata: {},
+  },
+];
+
 export const demoPayment = {
   method: "card",
   brand: "Visa",

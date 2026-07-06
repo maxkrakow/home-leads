@@ -2,9 +2,10 @@
 // Tabs: Overview, Campaigns & Proofs, Onboarding, Uploads, Skip Trace, Payment.
 import React, { useState, useEffect, useMemo } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../firebase";
 import { usePortalAuth } from "./portalAuth";
-import { demoClient, demoCampaigns, demoProofs, demoUploads, demoSkipTrace, demoPayment } from "./demoData";
+import { demoClient, demoCampaigns, demoProofs, demoUploads, demoSkipTrace, demoPayment, demoInvoices } from "./demoData";
 import Overview from "./tabs/Overview";
 import Campaigns from "./tabs/Campaigns";
 import Onboarding from "./tabs/Onboarding";
@@ -27,6 +28,7 @@ export default function PortalShell() {
   const [campaigns, setCampaigns] = useState([]);
   const [proofs, setProofs] = useState([]);
   const [uploads, setUploads] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loadingSub, setLoadingSub] = useState(true);
 
   // Load subcollections for real (non-demo) clients.
@@ -48,6 +50,28 @@ export default function PortalShell() {
         setCampaigns(c.docs.map((d) => ({ id: d.id, ...d.data() })));
         setProofs(p.docs.map((d) => ({ id: d.id, ...d.data() })));
         setUploads(u.docs.map((d) => ({ id: d.id, ...d.data() })));
+
+        // Live invoices from Stripe — so the Overview alert can surface
+        // unpaid ones without waiting on webhook writes to Firestore.
+        try {
+          const listFn = httpsCallable(getFunctions(), "listStripeInvoices");
+          const res = await listFn({ limit: 25 });
+          if (cancelled) return;
+          const live = (res.data?.invoices || []).map((inv) => ({
+            id: inv.id,
+            description: inv.description,
+            status: inv.status,
+            amountDue: inv.amountDue,
+            amountPaid: inv.amountPaid,
+            hostedInvoiceUrl: inv.hostedInvoiceUrl,
+            invoicePdf: inv.invoicePdf,
+            created: inv.created ? new Date(inv.created) : null,
+            metadata: inv.metadata || null,
+          }));
+          setInvoices(live);
+        } catch (invErr) {
+          console.warn("live invoice fetch failed, will fall through to Payment tab fallback:", invErr.message);
+        }
       } catch (err) {
         console.error("portal load failed:", err);
       } finally {
@@ -68,6 +92,7 @@ export default function PortalShell() {
         uploads: demoUploads,
         skipTrace: demoSkipTrace,
         payment: demoPayment,
+        invoices: demoInvoices,
       };
     }
     return {
@@ -77,8 +102,9 @@ export default function PortalShell() {
       uploads,
       skipTrace: null,
       payment: null,
+      invoices,
     };
-  }, [isDemo, client, campaigns, proofs, uploads]);
+  }, [isDemo, client, campaigns, proofs, uploads, invoices]);
 
   return (
     <div className="min-h-screen bg-gray-50">

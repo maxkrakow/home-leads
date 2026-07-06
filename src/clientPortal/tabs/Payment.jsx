@@ -12,13 +12,13 @@ import { usePortalAuth } from "../portalAuth";
 import { Card, Stat, formatDate } from "./uiBits";
 
 export default function Payment({ view }) {
-  const { payment } = view;
+  const { payment, invoices: preloadedInvoices } = view;
   const { isDemo, client, setClient } = usePortalAuth();
   const [busyCheckout, setBusyCheckout] = useState(false);
   const [busyPortal, setBusyPortal] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState(preloadedInvoices || []);
 
   // Look up an existing Stripe subscription by email so pre-portal clients
   // don't have to re-checkout. Runs once when a real client mounts the tab.
@@ -55,13 +55,22 @@ export default function Payment({ view }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo, client?.id]);
 
+  // Sync local invoice state whenever the shell hands us a new preloaded list.
+  useEffect(() => {
+    if (preloadedInvoices && preloadedInvoices.length > 0) {
+      setInvoices(preloadedInvoices);
+    }
+  }, [preloadedInvoices]);
+
   // Load recent invoices for the real client. Tries Stripe live first so newly
   // sent invoices show up before the webhook lands, then falls back to the
-  // Firestore payments/ mirror if the Stripe call fails.
+  // Firestore payments/ mirror if the Stripe call fails. Skipped when the
+  // shell already gave us a populated list.
   useEffect(() => {
     let cancelled = false;
     async function load() {
       if (isDemo || !client?.id) return;
+      if (preloadedInvoices && preloadedInvoices.length > 0) return;
       try {
         const listFn = httpsCallable(getFunctions(), "listStripeInvoices");
         const res = await listFn({ limit: 25 });

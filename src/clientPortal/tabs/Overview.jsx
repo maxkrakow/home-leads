@@ -3,13 +3,16 @@ import React from "react";
 import { Card, Stat, StageChip, formatDate } from "./uiBits";
 
 export default function Overview({ view, onNavigate }) {
-  const { client, campaigns, proofs } = view;
+  const { client, campaigns, proofs, invoices = [] } = view;
 
   const totalDelivered = campaigns.reduce((s, c) => s + (c.delivered || 0), 0);
   const totalScans = campaigns.reduce((s, c) => s + (c.scans || 0), 0);
   const totalCalls = campaigns.reduce((s, c) => s + (c.calls || 0), 0);
   const totalTexts = campaigns.reduce((s, c) => s + (c.texts || 0), 0);
   const pendingProofs = proofs.filter((p) => p.status === "in_review");
+  // Unpaid Stripe invoices — "open" is the state where a hosted invoice has
+  // been sent but not paid yet. past_due is also worth flagging.
+  const unpaidInvoices = (invoices || []).filter((i) => ["open", "past_due", "uncollectible"].includes(i.status));
   const nextCampaign = [...campaigns].sort((a, b) => new Date(a.dropDate || 0) - new Date(b.dropDate || 0)).find((c) => c.status !== "delivered");
 
   return (
@@ -46,6 +49,51 @@ export default function Overview({ view, onNavigate }) {
                   <p className="text-[10px] text-gray-400 mt-1">Uploaded {formatDate(p.uploadedAt)}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {unpaidInvoices.length > 0 && (
+        <Card
+          title={`Invoice${unpaidInvoices.length === 1 ? "" : "s"} awaiting payment`}
+          subtitle="Pay these to keep your campaigns moving. Opens Stripe's hosted invoice page."
+          action={
+            <button
+              onClick={() => onNavigate("payment")}
+              className="rounded-full bg-rose-600 text-white text-xs font-semibold px-4 py-2 hover:bg-rose-700"
+            >
+              View {unpaidInvoices.length} invoice{unpaidInvoices.length === 1 ? "" : "s"}
+            </button>
+          }
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {unpaidInvoices.slice(0, 2).map((i) => (
+              <a
+                key={i.id}
+                href={i.hostedInvoiceUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-rose-200 bg-rose-50 p-3 flex gap-3 items-start hover:bg-rose-100 transition-colors"
+              >
+                <div className="flex-shrink-0 w-16 h-20 rounded bg-white border border-rose-200 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium text-gray-900 truncate flex-1">{i.description || "Invoice"}</p>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-rose-200 text-rose-800 flex-shrink-0">
+                      {i.status === "past_due" ? "PAST DUE" : "UNPAID"}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-rose-700">
+                    ${((i.amountDue || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-1">Sent {formatDate(i.created)}</p>
+                </div>
+              </a>
             ))}
           </div>
         </Card>
