@@ -59,6 +59,7 @@ function Header() {
           <a href="#pricing" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Pricing</a>
           <a href="#results" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Results</a>
           <a href="#faq" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">FAQ</a>
+          <a href="/portal" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition">Client login</a>
           <a
             href="/get-started"
             className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
@@ -83,6 +84,7 @@ function Header() {
           <a href="#pricing" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">Pricing</a>
           <a href="#results" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">Results</a>
           <a href="#faq" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-700 py-2">FAQ</a>
+          <a href="/portal" className="block text-sm font-medium text-gray-700 py-2">Client login</a>
           <a href="/get-started" className="block rounded-full bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white">Get Started</a>
         </div>
       )}

@@ -1,29 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read and write their own user data
+    // Admin allowlist — keep in sync with ADMIN_EMAILS in src/firebase.js.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in [
+          "max@untappedhomes.com",
+          "max@lended.ai",
+          "maxkrakow@gmail.com"
+        ];
+    }
+
+    // Owner check for a client resource: signed-in and the doc id matches
+    // either the user's uid OR their email (email-keyed docs get promoted to
+    // uid-keyed on first sign-in, so both forms need to be readable).
+    function isClientOwner(clientId) {
+      return request.auth != null && (
+        clientId == request.auth.uid
+        || clientId == request.auth.token.email
+      );
+    }
+
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // Allow users to read and write their own pending subscriptions
+
     match /pendingSubscriptions/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // Allow authenticated users to read the Counties collection
+
     match /Counties/{documentId} {
       allow read: if request.auth != null;
     }
-    
-    // Leads: public create (landing page form), open read for /leads admin page
-    // (gated client-side by access code only — anyone with project id can query)
+
+    // Leads: public create (landing page form), open read for /leads admin page.
     match /leads/{leadId} {
       allow read: if true;
       allow create: if true;
     }
-    
-    // Default deny all
+
+    // Client portal accounts + subcollections.
+    match /clients/{clientId} {
+      allow read, write: if isAdmin();
+      allow read, create, update: if isClientOwner(clientId);
+
+      match /campaigns/{campaignId} {
+        allow read, write: if isAdmin();
+        allow read: if isClientOwner(clientId);
+      }
+      match /proofs/{proofId} {
+        allow read, write: if isAdmin();
+        allow read, update: if isClientOwner(clientId);
+      }
+      match /uploads/{uploadId} {
+        allow read, write: if isAdmin();
+        allow read, write: if isClientOwner(clientId);
+      }
+      match /payments/{paymentId} {
+        allow read, write: if isAdmin();
+        allow read: if isClientOwner(clientId);
+      }
+    }
+
+    // Default deny.
     match /{document=**} {
       allow read, write: if false;
     }

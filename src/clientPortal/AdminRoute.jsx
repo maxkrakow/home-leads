@@ -1,0 +1,423 @@
+// Admin route (/portal-admin). Gated by ADMIN_EMAILS.
+// v1 capabilities:
+//   - list clients
+//   - create a client (email + legal name)
+//   - open a client -> add a campaign row, upload a proof, mark onboarding done
+// Everything writes directly to Firestore; more polish comes later.
+import React, { useEffect, useRef, useState } from "react";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { db, storage } from "../firebase";
+import { PortalAuthProvider, usePortalAuth } from "./portalAuth";
+import PortalLogin from "./PortalLogin";
+import { Card, StageChip, formatDate } from "./tabs/uiBits";
+
+function AdminGate() {
+  const { user, loading, isAdmin, signOut } = usePortalAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-sm text-gray-500">Loading…</div>;
+  if (!user) return <PortalLogin />;
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
+        <p className="text-sm text-gray-700 mb-2">Admin access required.</p>
+        <p className="text-xs text-gray-500 mb-4">Signed in as {user.email}. Ask Max to add this email to ADMIN_EMAILS.</p>
+        <button onClick={signOut} className="text-xs font-medium rounded-full border border-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-100">
+          Sign out
+        </button>
+      </div>
+    );
+  }
+  return <AdminShell />;
+}
+
+function AdminShell() {
+  const { user, signOut } = usePortalAuth();
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const snap = await getDocs(query(collection(db, "clients"), orderBy("createdAt", "desc")));
+      setClients(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { load(); }, []);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <a href="/" className="text-lg font-extrabold text-gray-900 tracking-tight">
+              Untapped<span className="text-emerald-600">Homes</span>
+            </a>
+            <span className="text-xs text-gray-400">/ Admin</span>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <a href="/portal" className="hover:text-gray-900">Client portal →</a>
+            <span>{user?.email}</span>
+            <button onClick={signOut} className="rounded-full border border-gray-200 px-3 py-1.5 text-gray-700 hover:bg-gray-100">Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {!selected ? (
+          <>
+            <div className="flex items-end justify-between gap-3 flex-wrap">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
+                <p className="text-sm text-gray-500 mt-1">{clients.length} accounts.</p>
+              </div>
+            </div>
+
+            <CreateClient onCreated={load} />
+
+            {loading ? (
+              <div className="text-center text-sm text-gray-500 py-12">Loading…</div>
+            ) : clients.length === 0 ? (
+              <Card><p className="text-center text-sm text-gray-500 py-8">No clients yet — create one above.</p></Card>
+            ) : (
+              <Card title="All clients">
+                <div className="divide-y divide-gray-100">
+                  {clients.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelected(c)}
+                      className="w-full flex items-center justify-between py-3 text-left hover:bg-gray-50 -mx-2 px-2 rounded"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {c.dbaName || c.legalName || c.email || "(unnamed)"}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{c.email}</p>
+                      </div>
+                      <div className="text-xs text-gray-400 flex-shrink-0">
+                        {c.onboardingComplete ? (
+                          <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 font-medium">Onboarded</span>
+                        ) : (
+                          <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 font-medium">Onboarding</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </>
+        ) : (
+          <ClientDetail client={selected} onBack={() => { setSelected(null); load(); }} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+function CreateClient({ onCreated }) {
+  const [email, setEmail] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!email.trim() || !legalName.trim()) return;
+    setBusy(true);
+    try {
+      // Use email as the doc id for pre-provisioned clients so the resolveClient
+      // step in portalAuth can find them before the user first signs in.
+      const id = email.trim().toLowerCase();
+      await setDoc(doc(db, "clients", id), {
+        email: id,
+        legalName: legalName.trim(),
+        createdAt: serverTimestamp(),
+        onboardingComplete: false,
+        provisioned: true,
+      }, { merge: true });
+      setEmail("");
+      setLegalName("");
+      onCreated?.();
+    } catch (err) {
+      console.error(err);
+      alert("Could not create client: " + (err.message || err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Card title="Create client">
+      <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <input
+          type="email"
+          required
+          placeholder="client@company.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+        <input
+          type="text"
+          required
+          placeholder="Legal business name"
+          value={legalName}
+          onChange={(e) => setLegalName(e.target.value)}
+          className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+        <button
+          type="submit"
+          disabled={busy}
+          className="rounded-lg bg-emerald-600 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {busy ? "Creating…" : "Create client"}
+        </button>
+      </form>
+      <p className="text-[11px] text-gray-500 mt-2">
+        The client can sign in at <a href="/portal" className="underline">/portal</a> using this email. They'll get a passwordless sign-in link.
+      </p>
+    </Card>
+  );
+}
+
+function ClientDetail({ client, onBack }) {
+  const [campaigns, setCampaigns] = useState([]);
+  const [proofs, setProofs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [c, p] = await Promise.all([
+        getDocs(query(collection(db, "clients", client.id, "campaigns"), orderBy("dropDate", "desc"))).catch(() => ({ docs: [] })),
+        getDocs(query(collection(db, "clients", client.id, "proofs"), orderBy("uploadedAt", "desc"))).catch(() => ({ docs: [] })),
+      ]);
+      setCampaigns(c.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setProofs(p.docs.map((d) => ({ id: d.id, ...d.data() })));
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { load(); }, [client.id]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <button onClick={onBack} className="text-xs font-medium text-gray-600 hover:text-gray-900">← All clients</button>
+      </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{client.dbaName || client.legalName || client.email}</h1>
+        <p className="text-sm text-gray-500 mt-1">{client.email}</p>
+      </div>
+
+      <AddCampaign clientId={client.id} onAdded={load} />
+      <AddProof clientId={client.id} campaigns={campaigns} onAdded={load} />
+
+      <Card title={`Campaigns (${campaigns.length})`}>
+        {loading ? (
+          <p className="text-xs text-gray-500 italic">Loading…</p>
+        ) : campaigns.length === 0 ? (
+          <p className="text-xs text-gray-500 italic">None yet.</p>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {campaigns.map((c) => (
+              <div key={c.id} className="py-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-semibold text-gray-900">{c.name}</p>
+                    <StageChip stage={c.status} />
+                  </div>
+                  <p className="text-xs text-gray-500">Drops {formatDate(c.dropDate)} · {(c.quantity || 0).toLocaleString()} flyers</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card title={`Proofs (${proofs.length})`}>
+        {proofs.length === 0 ? (
+          <p className="text-xs text-gray-500 italic">None yet.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {proofs.map((p) => (
+              <div key={p.id} className="rounded-lg border border-gray-200 p-2">
+                <a href={p.fullUrl} target="_blank" rel="noopener noreferrer">
+                  <img src={p.thumbUrl} alt="" className="w-full aspect-[4/5] object-cover rounded" />
+                </a>
+                <p className="text-[11px] font-medium text-gray-900 mt-1 truncate">{p.version}</p>
+                <p className="text-[10px] text-gray-500 truncate">{p.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function AddCampaign({ clientId, onAdded }) {
+  const [name, setName] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [dropDate, setDropDate] = useState("");
+  const [status, setStatus] = useState("design_review");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await addDoc(collection(db, "clients", clientId, "campaigns"), {
+        name,
+        quantity: Number(quantity) || 0,
+        dropDate: dropDate || null,
+        status,
+        delivered: 0,
+        inTransit: 0,
+        scans: 0,
+        calls: 0,
+        texts: 0,
+        landingPageVisits: 0,
+        createdAt: serverTimestamp(),
+      });
+      setName(""); setQuantity(""); setDropDate(""); setStatus("design_review");
+      onAdded?.();
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <Card title="Add a campaign">
+      <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
+        <label className="text-xs text-gray-600 md:col-span-2">
+          Name
+          <input value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        </label>
+        <label className="text-xs text-gray-600">
+          Quantity
+          <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        </label>
+        <label className="text-xs text-gray-600">
+          Drop date
+          <input type="date" value={dropDate} onChange={(e) => setDropDate(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        </label>
+        <label className="text-xs text-gray-600">
+          Stage
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+            <option value="design_review">Design review</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="in_transit">In transit</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </label>
+        <button disabled={busy} className="rounded-lg bg-emerald-600 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-700 disabled:opacity-50 md:col-span-5">
+          {busy ? "Adding…" : "Add campaign"}
+        </button>
+      </form>
+    </Card>
+  );
+}
+
+function AddProof({ clientId, campaigns, onAdded }) {
+  const [campaignId, setCampaignId] = useState(campaigns[0]?.id || "");
+  const [version, setVersion] = useState("v1");
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const inputRef = useRef(null);
+
+  useEffect(() => { if (!campaignId && campaigns[0]?.id) setCampaignId(campaigns[0].id); }, [campaigns, campaignId]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    const file = inputRef.current?.files?.[0];
+    if (!file) { alert("Pick a proof file first."); return; }
+    if (!campaignId) { alert("Add a campaign before uploading a proof."); return; }
+    setBusy(true);
+    setProgress(0);
+    try {
+      const safe = file.name.replace(/[^\w.\-]/g, "_");
+      const path = `clients/${clientId}/proofs/${Date.now()}_${safe}`;
+      const sref = ref(storage, path);
+      const task = uploadBytesResumable(sref, file);
+      await new Promise((resolve, reject) => {
+        task.on("state_changed",
+          (snap) => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
+          reject,
+          resolve);
+      });
+      const url = await getDownloadURL(task.snapshot.ref);
+      await addDoc(collection(db, "clients", clientId, "proofs"), {
+        campaignId,
+        version,
+        notes: notes || null,
+        thumbUrl: url,
+        fullUrl: url,
+        storagePath: path,
+        status: "in_review",
+        uploadedAt: serverTimestamp(),
+      });
+      setNotes("");
+      setVersion("v1");
+      inputRef.current.value = "";
+      onAdded?.();
+    } catch (err) {
+      alert("Upload failed: " + (err.message || err));
+    } finally {
+      setBusy(false);
+      setProgress(0);
+    }
+  };
+
+  return (
+    <Card title="Upload a proof">
+      <form onSubmit={submit} className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <label className="text-xs text-gray-600">
+            Campaign
+            <select value={campaignId} onChange={(e) => setCampaignId(e.target.value)} required className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+              <option value="">Pick a campaign…</option>
+              {campaigns.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+          <label className="text-xs text-gray-600">
+            Version
+            <input value={version} onChange={(e) => setVersion(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs text-gray-600">
+            File (image)
+            <input ref={inputRef} type="file" accept="image/*" required className="mt-1 w-full text-xs" />
+          </label>
+        </div>
+        <label className="text-xs text-gray-600 block">
+          Notes to client
+          <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        </label>
+        <div className="flex items-center gap-3">
+          <button disabled={busy} className="rounded-lg bg-emerald-600 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-700 disabled:opacity-50">
+            {busy ? `Uploading… ${progress}%` : "Upload proof"}
+          </button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+export default function AdminRoute() {
+  return (
+    <PortalAuthProvider>
+      <AdminGate />
+    </PortalAuthProvider>
+  );
+}
