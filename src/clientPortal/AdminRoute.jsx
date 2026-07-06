@@ -223,6 +223,7 @@ function ClientDetail({ client, onBack }) {
         <p className="text-sm text-gray-500 mt-1">{client.email}</p>
       </div>
 
+      <SubscriptionPanel client={client} onChanged={onBack} />
       <AddCampaign clientId={client.id} onAdded={load} />
       <AddProof clientId={client.id} campaigns={campaigns} onAdded={load} />
 
@@ -403,6 +404,164 @@ function AddProof({ clientId, campaigns, onAdded }) {
           </button>
         </div>
       </form>
+    </Card>
+  );
+}
+
+// Admin subscription controls. Shows current status, and if the client has
+// no subscription, gives the admin a plan+quantity picker to launch a
+// Checkout session on their behalf. The Checkout link needs to go to the
+// CLIENT, not to the admin, so we show a "copy link" button rather than
+// redirecting the admin's browser.
+function SubscriptionPanel({ client, onChanged }) {
+  const [busy, setBusy] = useState(false);
+  const [busySync, setBusySync] = useState(false);
+  const [plan, setPlan] = useState("standard");
+  const [quantity, setQuantity] = useState(1);
+  const [checkoutUrl, setCheckoutUrl] = useState(null);
+  const [error, setError] = useState(null);
+
+  const hasSub = Boolean(client?.stripeSubscriptionId);
+  const status = client?.subscriptionStatus || null;
+  const priceLabel = plan === "standard" ? "$499/mo" : "$249/mo";
+  const total = plan === "standard" ? 499 * quantity : 249 * quantity;
+
+  const start = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const fn = httpsCallable(getFunctions(), "createCheckoutSession");
+      const res = await fn({
+        plan,
+        quantity,
+        targetClientId: client.id,
+        returnUrl: `${window.location.origin}/portal`,
+      });
+      setCheckoutUrl(res.data?.url || null);
+    } catch (err) {
+      setError(err.message || "Could not create checkout link.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const syncNow = async () => {
+    setBusySync(true);
+    setError(null);
+    try {
+      // syncStripeSubscription requires an auth call, so it only works for
+      // the signed-in user's own uid. For admin use we just tell the admin
+      // to have the client sign in, or write a separate admin-side sync if
+      // needed — for now this button just refreshes the page.
+      onChanged?.();
+    } catch (err) {
+      setError(err.message || err);
+    } finally {
+      setBusySync(false);
+    }
+  };
+
+  return (
+    <Card
+      title="Subscription"
+      subtitle={
+        hasSub
+          ? `Status: ${status || "unknown"} · Plan ${client?.subscriptionPriceId || "—"} · Qty ${client?.subscriptionQuantity || 1}`
+          : "No subscription linked to this client yet."
+      }
+      action={
+        hasSub && (
+          <button
+            type="button"
+            onClick={syncNow}
+            disabled={busySync}
+            className="rounded-full border border-gray-300 text-xs font-semibold text-gray-700 px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {busySync ? "…" : "Refresh"}
+          </button>
+        )
+      }
+    >
+      {!hasSub && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+            <label className="text-xs text-gray-600">
+              Plan
+              <select
+                value={plan}
+                onChange={(e) => setPlan(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="standard">$499/mo standard</option>
+                <option value="discount">$249/mo discount</option>
+              </select>
+            </label>
+            <label className="text-xs text-gray-600">
+              Quantity
+              <input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              />
+            </label>
+            <div className="text-xs text-gray-600">
+              <div className="text-gray-500">Recurring total</div>
+              <div className="mt-1 text-lg font-bold text-emerald-700">
+                ${total.toLocaleString()}
+                <span className="text-xs font-medium text-gray-500"> / mo</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={start}
+              disabled={busy}
+              className="rounded-full bg-emerald-600 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {busy ? "Creating…" : "Create Checkout link"}
+            </button>
+            {error && <span className="text-xs text-red-600">{error}</span>}
+          </div>
+
+          {checkoutUrl && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 space-y-2">
+              <p className="text-xs font-medium text-emerald-800">Checkout link ready — send it to the client to complete payment:</p>
+              <input
+                readOnly
+                value={checkoutUrl}
+                onFocus={(e) => e.target.select()}
+                className="w-full rounded-md border border-emerald-300 bg-white px-3 py-2 text-xs font-mono"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { navigator.clipboard.writeText(checkoutUrl); }}
+                  className="text-xs font-semibold rounded-full bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700"
+                >
+                  Copy link
+                </button>
+                <a
+                  href={checkoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold rounded-full border border-emerald-300 text-emerald-800 bg-white px-3 py-1.5 hover:bg-emerald-100"
+                >
+                  Open link
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {hasSub && (
+        <p className="text-xs text-gray-500">
+          Subscription is active on Stripe. Client can manage card / cancel via the "Manage subscription" button on their Payment tab.
+        </p>
+      )}
     </Card>
   );
 }

@@ -11,19 +11,41 @@ import { db } from "../../firebase";
 import { usePortalAuth } from "../portalAuth";
 import { Card, Stat, formatDate } from "./uiBits";
 
-const PLANS = [
-  { key: "standard", label: "$499/mo standard", amount: 499 },
-  { key: "discount", label: "$249/mo discount", amount: 249 },
-];
-
 export default function Payment({ view }) {
   const { payment } = view;
-  const { isDemo, user, client } = usePortalAuth();
+  const { isDemo, client, setClient } = usePortalAuth();
   const [busyCheckout, setBusyCheckout] = useState(false);
   const [busyPortal, setBusyPortal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("standard");
+  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
   const [invoices, setInvoices] = useState([]);
+
+  // Look up an existing Stripe subscription by email so pre-portal clients
+  // don't have to re-checkout. Runs once when a real client mounts the tab.
+  useEffect(() => {
+    if (isDemo || !client?.id) return;
+    // Only sync if we don't already know they have a subscription.
+    if (client?.stripeSubscriptionId) return;
+    let cancelled = false;
+    (async () => {
+      setSyncing(true);
+      try {
+        const fn = httpsCallable(getFunctions(), "syncStripeSubscription");
+        const res = await fn({});
+        if (cancelled) return;
+        if (res.data?.linked) {
+          // Force a refetch so the tab picks up the new fields.
+          setClient((c) => ({ ...(c || {}), stripeCustomerId: c?.stripeCustomerId || "pending" }));
+        }
+      } catch (err) {
+        console.warn("syncStripeSubscription failed:", err.message || err);
+      } finally {
+        if (!cancelled) setSyncing(false);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo, client?.id]);
 
   // Load recent invoices for the real client.
   useEffect(() => {
@@ -51,7 +73,9 @@ export default function Payment({ view }) {
     setError(null);
     try {
       const fn = httpsCallable(getFunctions(), "createCheckoutSession");
-      const res = await fn({ plan: selectedPlan, returnUrl: window.location.href });
+      // Client-side always uses the default $499 standard plan. Admins can
+      // start a $249 subscription via the admin route.
+      const res = await fn({ returnUrl: window.location.href });
       const url = res.data?.url;
       if (url) window.location.assign(url);
     } catch (err) {
@@ -122,27 +146,19 @@ export default function Payment({ view }) {
         </div>
       )}
 
+      {syncing && !hasSub && (
+        <div className="rounded-lg border border-gray-200 bg-white text-xs text-gray-500 px-4 py-3">
+          Checking Stripe for an existing subscription…
+        </div>
+      )}
       {!hasSub ? (
         <Card
           title="Start your subscription"
-          subtitle="Pick a plan, then we'll take you to Stripe Checkout to enter payment info."
+          subtitle="$499/mo covers weekly drops, tracking, and monthly reporting."
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-            {PLANS.map((p) => (
-              <button
-                key={p.key}
-                type="button"
-                onClick={() => setSelectedPlan(p.key)}
-                className={`rounded-xl border-2 p-4 text-left transition-colors ${
-                  selectedPlan === p.key
-                    ? "border-emerald-500 bg-emerald-50"
-                    : "border-gray-200 hover:border-emerald-300"
-                }`}
-              >
-                <p className="text-sm font-semibold text-gray-900">{p.label}</p>
-                <p className="text-xs text-gray-500 mt-1">Includes weekly drops, tracking, monthly reporting.</p>
-              </button>
-            ))}
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 mb-4">
+            <p className="text-lg font-bold text-gray-900">$499/mo</p>
+            <p className="text-xs text-gray-600 mt-1">Base subscription. Flyer print/postage billed separately per campaign.</p>
           </div>
           <button
             onClick={startCheckout}
@@ -151,6 +167,9 @@ export default function Payment({ view }) {
           >
             {busyCheckout ? "Redirecting…" : "Continue to checkout"}
           </button>
+          <p className="text-[11px] text-gray-500 mt-3">
+            If you already have a subscription with us, sign in with the email you paid with — we'll link it automatically.
+          </p>
         </Card>
       ) : (
         <>

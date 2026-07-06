@@ -74,32 +74,155 @@ async function ensureStripeCustomer(stripe, uid, email, name) {
   return customer.id;
 }
 
+// Helper: pull the client's subscription summary off Stripe and write a
+// consistent shape onto their clients/{uid} doc. Used by syncStripeSubscription
+// (on demand from the portal) and via webhook when Stripe pushes updates.
+async function writeSubscriptionSummary(stripe, uid, subscription) {
+  const first = subscription.items?.data?.[0];
+  const patch = {
+    stripeCustomerId: subscription.customer,
+    stripeSubscriptionId: subscription.id,
+    subscriptionStatus: subscription.status,
+    subscriptionPriceId: first?.price?.id || null,
+    subscriptionQuantity: first?.quantity || 1,
+    subscriptionCurrentPeriodEnd: subscription.current_period_end
+      ? admin.firestore.Timestamp.fromMillis(subscription.current_period_end * 1000)
+      : null,
+    cancelAtPeriodEnd: !!subscription.cancel_at_period_end,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  await db.collection("clients").doc(uid).set(patch, { merge: true });
+  return patch;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// createCheckoutSession — user starts a subscription
+// syncStripeSubscription — link a signed-in user to any existing Stripe
+// subscription that matches their email. Called by the portal on load so
+// pre-portal clients don't have to re-checkout.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.syncStripeSubscription = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    const uid = request.auth.uid;
+    const email = (request.auth.token.email || "").toLowerCase();
+    if (!email) return { linked: false, reason: "no-email" };
+
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+
+    // Read current state first — if we already know their Stripe customer id,
+    // just refresh from it instead of doing an email search.
+    const clientRef = db.collection("clients").doc(uid);
+    const clientSnap = await clientRef.get();
+    let customerId = clientSnap.exists ? clientSnap.data()?.stripeCustomerId : null;
+
+    if (!customerId) {
+      // Look up by email. Stripe returns most-recent first; we take the one
+      // with an active subscription if there is one.
+      const customers = await stripe.customers.list({ email, limit: 10 });
+      if (customers.data.length === 0) return { linked: false, reason: "no-customer" };
+
+      // Prefer a customer that has any non-canceled subscription.
+      let chosen = null;
+      for (const c of customers.data) {
+        const subs = await stripe.subscriptions.list({ customer: c.id, status: "all", limit: 10 });
+        const alive = subs.data.find((s) =>
+          ["active", "trialing", "past_due", "unpaid", "incomplete"].includes(s.status)
+        );
+        if (alive) { chosen = { customer: c, subscription: alive }; break; }
+        if (!chosen) chosen = { customer: c, subscription: null };
+      }
+      if (!chosen) return { linked: false, reason: "no-customer" };
+
+      customerId = chosen.customer.id;
+      await clientRef.set(
+        {
+          stripeCustomerId: customerId,
+          email,
+          uid,
+          claimedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+      if (chosen.subscription) {
+        // Backfill the subscription metadata with our clientId so webhooks
+        // land in the right place going forward.
+        try {
+          await stripe.subscriptions.update(chosen.subscription.id, {
+            metadata: { ...(chosen.subscription.metadata || {}), clientId: uid },
+          });
+        } catch (e) { /* ignore metadata write failure */ }
+        await writeSubscriptionSummary(stripe, uid, chosen.subscription);
+        return { linked: true, subscriptionId: chosen.subscription.id, status: chosen.subscription.status };
+      }
+      return { linked: true, subscriptionId: null, status: null };
+    }
+
+    // Already linked — refresh from the known customer id.
+    const subs = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 5 });
+    const alive = subs.data.find((s) =>
+      ["active", "trialing", "past_due", "unpaid", "incomplete"].includes(s.status)
+    );
+    if (alive) {
+      await writeSubscriptionSummary(stripe, uid, alive);
+      return { linked: true, subscriptionId: alive.id, status: alive.status };
+    }
+    return { linked: true, subscriptionId: null, status: null };
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// createCheckoutSession — user starts a subscription. Client-side calls always
+// use the standard $499 plan (quantity 1). Admins can pass plan + quantity to
+// subscribe someone on the $249 tier or for multiple flyer streams.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.createCheckoutSession = onCall(
   { secrets: [STRIPE_SECRET_KEY], cors: true },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
-    const uid = request.auth.uid;
-    const email = request.auth.token.email || null;
-    const { plan = "standard", returnUrl } = request.data || {};
+    const callerEmail = (request.auth.token.email || "").toLowerCase();
+    const callerIsAdmin = ADMIN_EMAILS.has(callerEmail);
+
+    // Two use cases:
+    //   1. Client-side "Start subscription" button → subscribes the caller.
+    //   2. Admin-side "Start subscription for this client" panel →
+    //      subscribes the target clientId, may specify plan + quantity.
+    const {
+      plan: rawPlan,
+      quantity: rawQuantity,
+      returnUrl,
+      targetClientId, // admin-only
+    } = request.data || {};
+
+    // Only admins can override the plan or quantity or target another client.
+    const plan = callerIsAdmin ? (rawPlan || "standard") : "standard";
+    const quantity = callerIsAdmin ? Math.max(1, Number(rawQuantity) || 1) : 1;
     const priceId = PRICE_IDS[plan];
     if (!priceId) throw new HttpsError("invalid-argument", `Unknown plan: ${plan}`);
 
+    // Resolve which client we're subscribing for.
+    let clientId = request.auth.uid;
+    let subscriberEmail = callerEmail;
+    if (callerIsAdmin && targetClientId) {
+      const snap = await db.collection("clients").doc(targetClientId).get();
+      if (!snap.exists) throw new HttpsError("not-found", "Target client not found.");
+      clientId = targetClientId;
+      subscriberEmail = (snap.data()?.email || "").toLowerCase() || null;
+    }
+
     const stripe = stripeClient(STRIPE_SECRET_KEY.value());
-    const customer = await ensureStripeCustomer(stripe, uid, email, null);
+    const customer = await ensureStripeCustomer(stripe, clientId, subscriberEmail, null);
 
     const successBase = returnUrl || "https://untappedhomes.com/portal";
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: priceId, quantity }],
       allow_promotion_codes: true,
       success_url: `${successBase}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${successBase}?checkout=cancel`,
       subscription_data: {
-        metadata: { clientId: uid, plan },
+        metadata: { clientId, plan, quantity: String(quantity) },
       },
     });
 
