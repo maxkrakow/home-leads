@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Firebase Storage rules for the Untapped Homes client portal.
+// Files live under clients/{clientId}/... (proofs, uploads, etc). Only the
+// signed-in owner or an admin can read/write their folder. Reads inside a
+// folder rely on ownership too so proof URLs aren't world-readable.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email in [
+          "max@untappedhomes.com",
+          "max@lended.ai",
+          "maxkrakow@gmail.com"
+        ];
+    }
+
+    function isClientOwner(clientId) {
+      return request.auth != null && (
+        clientId == request.auth.uid
+        || clientId == request.auth.token.email
+      );
+    }
+
+    match /clients/{clientId}/{path=**} {
+      allow read, write: if isAdmin() || isClientOwner(clientId);
+    }
+
+    // Default deny everything else.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
