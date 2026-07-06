@@ -152,10 +152,16 @@ exports.syncStripeSubscription = onCall(
             metadata: { ...(chosen.subscription.metadata || {}), clientId: uid },
           });
         } catch (e) { /* ignore metadata write failure */ }
-        await writeSubscriptionSummary(stripe, uid, chosen.subscription);
-        return { linked: true, subscriptionId: chosen.subscription.id, status: chosen.subscription.status };
+        const patch = await writeSubscriptionSummary(stripe, uid, chosen.subscription);
+        // Serialize Timestamp → epoch millis for the callable response.
+        return {
+          linked: true,
+          subscriptionId: chosen.subscription.id,
+          status: chosen.subscription.status,
+          patch: serializePatch(patch),
+        };
       }
-      return { linked: true, subscriptionId: null, status: null };
+      return { linked: true, subscriptionId: null, status: null, patch: { stripeCustomerId: customerId } };
     }
 
     // Already linked — refresh from the known customer id.
@@ -164,12 +170,32 @@ exports.syncStripeSubscription = onCall(
       ["active", "trialing", "past_due", "unpaid", "incomplete"].includes(s.status)
     );
     if (alive) {
-      await writeSubscriptionSummary(stripe, uid, alive);
-      return { linked: true, subscriptionId: alive.id, status: alive.status };
+      const patch = await writeSubscriptionSummary(stripe, uid, alive);
+      return {
+        linked: true,
+        subscriptionId: alive.id,
+        status: alive.status,
+        patch: serializePatch(patch),
+      };
     }
     return { linked: true, subscriptionId: null, status: null };
   }
 );
+
+// Convert Firestore Timestamps → epoch millis so the callable can return them.
+function serializePatch(patch) {
+  const out = {};
+  for (const [k, v] of Object.entries(patch || {})) {
+    if (v && typeof v === "object" && typeof v.toMillis === "function") {
+      out[k] = { _millis: v.toMillis() };
+    } else if (v && typeof v === "object" && typeof v.seconds === "number") {
+      out[k] = { _millis: v.seconds * 1000 + Math.round((v.nanoseconds || 0) / 1e6) };
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // createCheckoutSession — user starts a subscription. Client-side calls always

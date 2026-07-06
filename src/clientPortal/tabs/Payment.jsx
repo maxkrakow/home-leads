@@ -33,9 +33,17 @@ export default function Payment({ view }) {
         const fn = httpsCallable(getFunctions(), "syncStripeSubscription");
         const res = await fn({});
         if (cancelled) return;
-        if (res.data?.linked) {
-          // Force a refetch so the tab picks up the new fields.
-          setClient((c) => ({ ...(c || {}), stripeCustomerId: c?.stripeCustomerId || "pending" }));
+        if (res.data?.linked && res.data?.patch) {
+          // Hydrate the client state with the exact fields the sync function
+          // just wrote to Firestore, converting the serialized-millis timestamps
+          // back to Date objects so the UI can format them.
+          const patch = { ...res.data.patch };
+          for (const [k, v] of Object.entries(patch)) {
+            if (v && typeof v === "object" && typeof v._millis === "number") {
+              patch[k] = new Date(v._millis);
+            }
+          }
+          setClient((c) => ({ ...(c || {}), ...patch }));
         }
       } catch (err) {
         console.warn("syncStripeSubscription failed:", err.message || err);
