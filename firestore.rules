@@ -81,6 +81,15 @@ service cloud.firestore {
       }
     }
 
+    // Admin-facing activity feed. Clients write (via the portal actions) and
+    // the stripe webhook writes on paid/failed/etc. Admins read + update
+    // (mark-as-read). Non-admin clients never read this collection.
+    match /activity/{eventId} {
+      allow read, update: if isAdmin();
+      allow create: if request.auth != null;
+      // No blanket delete — admins can prune via console if needed.
+    }
+
     // Default deny.
     match /{document=**} {
       allow read, write: if false;

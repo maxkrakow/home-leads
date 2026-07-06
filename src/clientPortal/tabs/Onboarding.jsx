@@ -6,6 +6,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { usePortalAuth } from "../portalAuth";
 import { Card } from "./uiBits";
+import { logActivity } from "../activity";
 
 const SERVICES = ["Roofing", "HVAC", "Plumbing", "Pest control", "Landscaping / lawn care", "Pool service", "Electrical", "General contracting", "Other"];
 const PROPERTY_TYPES = ["Single-family only", "Single-family + condos/townhomes", "All residential (incl. multi-family)"];
@@ -122,6 +123,17 @@ export default function Onboarding({ view }) {
       if (missing.length === 0) patch.onboardingComplete = true;
       await setDoc(doc(db, "clients", client.id), patch, { merge: true });
       setClient((c) => ({ ...(c || {}), ...patch }));
+      const displayName = form.dbaName || form.legalName || client.email || "Client";
+      logActivity({
+        type: patch.onboardingComplete ? "onboarding_completed" : "onboarding_updated",
+        clientId: client.id,
+        clientName: displayName,
+        title: patch.onboardingComplete
+          ? `${displayName} completed onboarding`
+          : `${displayName} updated onboarding`,
+        message: patch.onboardingComplete ? "All required fields filled." : null,
+        href: "/portal-admin",
+      });
       setSavedNote("Saved.");
       setTimeout(() => setSavedNote(null), 2500);
     } catch (err) {

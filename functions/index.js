@@ -498,6 +498,35 @@ exports.stripeWebhook = onRequest(
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    // Small helper: write an activity feed entry for the admin bell.
+    // Best-effort; failures are logged and swallowed so they don't fail the
+    // webhook return.
+    async function emitActivity({ type, clientId, title, message, meta }) {
+      try {
+        let clientName = null;
+        if (clientId) {
+          const snap = await db.collection("clients").doc(clientId).get();
+          if (snap.exists) {
+            const d = snap.data();
+            clientName = d.dbaName || d.legalName || d.email || null;
+          }
+        }
+        await db.collection("activity").add({
+          type,
+          clientId: clientId || null,
+          clientName,
+          title,
+          message: message || null,
+          href: "/portal-admin",
+          meta: meta || null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          readBy: {},
+        });
+      } catch (err) {
+        console.warn("emitActivity failed:", err.message);
+      }
+    }
+
     try {
       switch (event.type) {
         case "checkout.session.completed": {
@@ -511,6 +540,13 @@ exports.stripeWebhook = onRequest(
               lastCheckoutAt: admin.firestore.FieldValue.serverTimestamp(),
             };
             await db.collection("clients").doc(clientId).set(patch, { merge: true });
+            await emitActivity({
+              type: "subscription_started",
+              clientId,
+              title: "New subscription started",
+              message: s.amount_total ? `Charged $${(s.amount_total / 100).toLocaleString()}` : null,
+              meta: { sessionId: s.id, subscriptionId: s.subscription || null },
+            });
           }
           break;
         }
@@ -535,6 +571,21 @@ exports.stripeWebhook = onRequest(
               },
               { merge: true }
             );
+            // Only notify on canceled or new — updates fire on card changes,
+            // usage records, etc. and would flood the feed.
+            if (event.type === "customer.subscription.deleted") {
+              await emitActivity({
+                type: "subscription_canceled",
+                clientId,
+                title: "Subscription canceled",
+                message: sub.cancel_at_period_end ? "Set to cancel at period end." : "Ended now.",
+                meta: { subscriptionId: sub.id },
+              });
+            } else if (event.type === "customer.subscription.created") {
+              // "started" already fires from checkout.session.completed —
+              // avoid duplicates by only writing here if we don't see that path
+              // (rare — mostly for direct API-created subs).
+            }
           }
           break;
         }
@@ -580,6 +631,25 @@ exports.stripeWebhook = onRequest(
               },
               { merge: true }
             );
+
+            const amt = ((inv.amount_paid || inv.amount_due || 0) / 100).toLocaleString();
+            if (event.type === "invoice.paid") {
+              await emitActivity({
+                type: "invoice_paid",
+                clientId,
+                title: `Invoice paid — $${amt}`,
+                message: inv.description || "Payment received.",
+                meta: { invoiceId: inv.id, hostedInvoiceUrl: inv.hosted_invoice_url },
+              });
+            } else if (event.type === "invoice.payment_failed") {
+              await emitActivity({
+                type: "invoice_payment_failed",
+                clientId,
+                title: `Payment failed — $${amt}`,
+                message: inv.description || "Card declined or authorization failed.",
+                meta: { invoiceId: inv.id, hostedInvoiceUrl: inv.hosted_invoice_url },
+              });
+            }
           }
           break;
         }

@@ -4,6 +4,7 @@ import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { usePortalAuth } from "../portalAuth";
 import { Card, Stat, StageChip, formatDate } from "./uiBits";
+import { logActivity } from "../activity";
 
 export default function Campaigns({ view }) {
   const { client, campaigns, proofs } = view;
@@ -72,7 +73,7 @@ export default function Campaigns({ view }) {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {cProofs.map((p) => (
-                        <ProofRow key={p.id} proof={p} clientId={client.id} disabled={isDemo} />
+                        <ProofRow key={p.id} proof={p} clientId={client.id} clientName={client.dbaName || client.legalName || client.email || "Client"} disabled={isDemo} />
                       ))}
                     </div>
                   )}
@@ -86,7 +87,7 @@ export default function Campaigns({ view }) {
   );
 }
 
-function ProofRow({ proof, clientId, disabled }) {
+function ProofRow({ proof, clientId, clientName, disabled }) {
   const [status, setStatus] = useState(proof.status);
   const [saving, setSaving] = useState(false);
   const [comment, setComment] = useState("");
@@ -104,6 +105,19 @@ function ProofRow({ proof, clientId, disabled }) {
         clientDecisionAt: serverTimestamp(),
       });
       setStatus(newStatus);
+      // Fire an admin notification. Non-fatal.
+      logActivity({
+        type: newStatus === "approved" ? "proof_approved" : "proof_changes_requested",
+        clientId,
+        clientName,
+        title:
+          newStatus === "approved"
+            ? `${clientName} approved proof ${proof.version || ""}`.trim()
+            : `${clientName} requested changes on proof ${proof.version || ""}`.trim(),
+        message: comment || (newStatus === "approved" ? "Ready for print." : "Awaiting revisions."),
+        href: "/portal-admin",
+        meta: { proofId: proof.id, campaignId: proof.campaignId, comment: comment || null },
+      });
     } catch (err) {
       console.error(err);
       alert("Could not update this proof. Try again.");

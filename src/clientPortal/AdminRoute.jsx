@@ -22,6 +22,7 @@ import { db, storage } from "../firebase";
 import { PortalAuthProvider, usePortalAuth } from "./portalAuth";
 import PortalLogin from "./PortalLogin";
 import { Card, StageChip, formatDate } from "./tabs/uiBits";
+import AdminBell from "./AdminBell";
 
 function AdminGate() {
   const { user, loading, isAdmin, signOut } = usePortalAuth();
@@ -72,6 +73,7 @@ function AdminShell() {
           </div>
           <div className="flex items-center gap-3 text-xs text-gray-500">
             <a href="/portal" className="hover:text-gray-900">Client portal →</a>
+            <AdminBell />
             <span>{user?.email}</span>
             <button onClick={signOut} className="rounded-full border border-gray-200 px-3 py-1.5 text-gray-700 hover:bg-gray-100">Sign out</button>
           </div>

@@ -7,6 +7,7 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp } from "firebase/fi
 import { db, storage } from "../../firebase";
 import { usePortalAuth } from "../portalAuth";
 import { Card, formatDate } from "./uiBits";
+import { logActivity } from "../activity";
 
 export default function Uploads({ view }) {
   const { client, uploads } = view;
@@ -56,6 +57,16 @@ export default function Uploads({ view }) {
         { id: docRef.id, kind, fileName: file.name, fileUrl: url, uploadedAt: new Date() },
         ...prev,
       ]);
+      const displayName = client.dbaName || client.legalName || client.email || "Client";
+      logActivity({
+        type: "upload_added",
+        clientId: client.id,
+        clientName: displayName,
+        title: `${displayName} added a new ${kind}`,
+        message: file.name,
+        href: "/portal-admin",
+        meta: { uploadId: docRef.id, kind, fileName: file.name },
+      });
     } catch (err) {
       console.error(err);
       alert("Upload failed: " + (err.message || err));
