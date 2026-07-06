@@ -17,6 +17,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { db, storage } from "../firebase";
 import { PortalAuthProvider, usePortalAuth } from "./portalAuth";
 import PortalLogin from "./PortalLogin";
@@ -233,15 +234,7 @@ function ClientDetail({ client, onBack }) {
         ) : (
           <div className="divide-y divide-gray-100">
             {campaigns.map((c) => (
-              <div key={c.id} className="py-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-semibold text-gray-900">{c.name}</p>
-                    <StageChip stage={c.status} />
-                  </div>
-                  <p className="text-xs text-gray-500">Drops {formatDate(c.dropDate)} · {(c.quantity || 0).toLocaleString()} flyers</p>
-                </div>
-              </div>
+              <CampaignRow key={c.id} clientId={client.id} campaign={c} onDone={load} />
             ))}
           </div>
         )}
@@ -411,6 +404,122 @@ function AddProof({ clientId, campaigns, onAdded }) {
         </div>
       </form>
     </Card>
+  );
+}
+
+// Campaign row with a "Send flyer invoice" button. Calls the sendFlyerInvoice
+// callable, which builds a Stripe invoice for {quantity} × $unitAmount and
+// mails it via Stripe's hosted invoice page. Also records the resulting
+// invoice id / URL / status back onto the campaign doc so we don't ask twice.
+function CampaignRow({ clientId, campaign, onDone }) {
+  const [qty, setQty] = useState(campaign.quantity || "");
+  const [rate, setRate] = useState("1.00");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const send = async () => {
+    setError(null);
+    const quantity = Number(qty);
+    const unitAmount = Math.round(Number(rate) * 100);
+    if (!quantity || quantity <= 0) return setError("Enter a quantity.");
+    if (!unitAmount || unitAmount <= 0) return setError("Enter a per-flyer rate.");
+    setBusy(true);
+    try {
+      const fn = httpsCallable(getFunctions(), "sendFlyerInvoice");
+      const res = await fn({
+        clientId,
+        campaignId: campaign.id,
+        quantity,
+        unitAmount,
+        description: `Flyer charges — ${campaign.name || "campaign"}`,
+      });
+      if (res.data?.hostedInvoiceUrl) {
+        window.open(res.data.hostedInvoiceUrl, "_blank");
+      }
+      setShowForm(false);
+      onDone?.();
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Could not send invoice.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="py-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <p className="text-sm font-semibold text-gray-900">{campaign.name}</p>
+            <StageChip stage={campaign.status} />
+            {campaign.stripeInvoiceStatus && (
+              <span className={`text-[10px] rounded-full px-1.5 py-0.5 font-medium ${
+                campaign.stripeInvoiceStatus === "paid"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : "bg-amber-100 text-amber-800"
+              }`}>
+                Invoice {campaign.stripeInvoiceStatus}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">
+            Drops {formatDate(campaign.dropDate)} · {(campaign.quantity || 0).toLocaleString()} flyers
+            {typeof campaign.stripeInvoiceTotalCents === "number" && (
+              <> · Invoiced ${(campaign.stripeInvoiceTotalCents / 100).toLocaleString()}</>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {campaign.stripeInvoiceHostedUrl && (
+            <a
+              href={campaign.stripeInvoiceHostedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium rounded-full border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-50"
+            >
+              View invoice
+            </a>
+          )}
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="text-xs font-semibold rounded-full bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700"
+          >
+            {showForm ? "Cancel" : "Send flyer invoice"}
+          </button>
+        </div>
+      </div>
+
+      {showForm && (
+        <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3 grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+          <label className="text-xs text-gray-600">
+            Quantity
+            <input type="number" value={qty} onChange={(e) => setQty(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          </label>
+          <label className="text-xs text-gray-600">
+            $ per flyer
+            <input type="number" step="0.01" value={rate} onChange={(e) => setRate(e.target.value)} className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          </label>
+          <div className="text-xs text-gray-600 md:col-span-2">
+            <div className="text-gray-500">Total</div>
+            <div className="mt-1 text-lg font-bold text-emerald-700">
+              ${(Number(qty || 0) * Number(rate || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+          </div>
+          <div className="md:col-span-4 flex items-center gap-2 flex-wrap">
+            <button
+              onClick={send}
+              disabled={busy}
+              className="rounded-full bg-emerald-600 text-white text-sm font-semibold px-4 py-2 hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {busy ? "Sending…" : "Send invoice to client"}
+            </button>
+            {error && <span className="text-xs text-red-600">{error}</span>}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

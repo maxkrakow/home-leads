@@ -1,19 +1,386 @@
 /**
- * Import function triggers from their respective submodules:
+ * Untapped Homes — Stripe wiring for the client portal.
  *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+ * Functions:
+ *   - createCheckoutSession  (callable)  — user starts a subscription
+ *   - createBillingPortalSession (callable) — user manages their sub / card
+ *   - sendFlyerInvoice (callable, admin only) — one-off invoice for a campaign
+ *   - stripeWebhook (HTTP) — persists subscription + invoice state back onto
+ *     clients/{clientId}.payment and a payments/ subcollection
  *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Secrets (set with `firebase functions:secrets:set NAME`):
+ *   STRIPE_SECRET_KEY
+ *   STRIPE_WEBHOOK_SECRET
+ *
+ * Env vars (baked in code below):
+ *   PRICE_499  price_1TZCeNF7R4hDasepwuKgGAzs   $499/mo standard
+ *   PRICE_249  price_1ThCiiF7R4hDasepIZebNvaN   $249/mo discounted
  */
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { defineSecret } = require("firebase-functions/params");
+const admin = require("firebase-admin");
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+admin.initializeApp();
+const db = admin.firestore();
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
+
+// Stripe Price IDs — keep in sync with the products in Stripe dashboard.
+const PRICE_IDS = {
+  standard: "price_1TZCeNF7R4hDasepwuKgGAzs", // $499/mo
+  discount: "price_1ThCiiF7R4hDasepIZebNvaN", // $249/mo
+};
+
+// Admin allow-list — mirrors ADMIN_EMAILS in src/firebase.js. Callable
+// functions check `context.auth.token.email` against this set.
+const ADMIN_EMAILS = new Set([
+  "max@untappedhomes.com",
+  "max@lended.ai",
+  "maxkrakow@gmail.com",
+]);
+
+// Lazy stripe instance — created once per warm invocation.
+let _stripe = null;
+function stripeClient(secretValue) {
+  if (!_stripe) {
+    const Stripe = require("stripe");
+    _stripe = new Stripe(secretValue, { apiVersion: "2024-06-20" });
+  }
+  return _stripe;
+}
+
+// Look up (or create) the Stripe Customer that maps to a portal user.
+async function ensureStripeCustomer(stripe, uid, email, name) {
+  const clientRef = db.collection("clients").doc(uid);
+  const snap = await clientRef.get();
+  const data = snap.exists ? snap.data() : {};
+  if (data?.stripeCustomerId) return data.stripeCustomerId;
+
+  const customer = await stripe.customers.create({
+    email: email || undefined,
+    name: name || undefined,
+    metadata: { clientId: uid, source: "untapped_homes_portal" },
+  });
+  await clientRef.set(
+    {
+      stripeCustomerId: customer.id,
+      email: email || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+  return customer.id;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// createCheckoutSession — user starts a subscription
+// ─────────────────────────────────────────────────────────────────────────────
+exports.createCheckoutSession = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    const uid = request.auth.uid;
+    const email = request.auth.token.email || null;
+    const { plan = "standard", returnUrl } = request.data || {};
+    const priceId = PRICE_IDS[plan];
+    if (!priceId) throw new HttpsError("invalid-argument", `Unknown plan: ${plan}`);
+
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+    const customer = await ensureStripeCustomer(stripe, uid, email, null);
+
+    const successBase = returnUrl || "https://untappedhomes.com/portal";
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer,
+      line_items: [{ price: priceId, quantity: 1 }],
+      allow_promotion_codes: true,
+      success_url: `${successBase}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${successBase}?checkout=cancel`,
+      subscription_data: {
+        metadata: { clientId: uid, plan },
+      },
+    });
+
+    return { url: session.url };
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// createBillingPortalSession — user manages card / cancels / downloads invoices
+// ─────────────────────────────────────────────────────────────────────────────
+exports.createBillingPortalSession = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    const uid = request.auth.uid;
+    const returnUrl = request.data?.returnUrl || "https://untappedhomes.com/portal";
+
+    const snap = await db.collection("clients").doc(uid).get();
+    const customerId = snap.exists ? snap.data()?.stripeCustomerId : null;
+    if (!customerId) {
+      throw new HttpsError(
+        "failed-precondition",
+        "No Stripe customer yet — start a subscription first."
+      );
+    }
+
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
+    });
+    return { url: session.url };
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sendFlyerInvoice (admin) — one-off invoice for a campaign's flyer count
+// ─────────────────────────────────────────────────────────────────────────────
+exports.sendFlyerInvoice = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    const callerEmail = (request.auth.token.email || "").toLowerCase();
+    if (!ADMIN_EMAILS.has(callerEmail)) {
+      throw new HttpsError("permission-denied", "Admin only.");
+    }
+
+    const {
+      clientId,
+      campaignId,
+      quantity,
+      unitAmount = 100, // cents — $1.00 per flyer default
+      description,
+    } = request.data || {};
+    if (!clientId || !campaignId || !quantity || quantity <= 0) {
+      throw new HttpsError("invalid-argument", "clientId, campaignId, quantity required.");
+    }
+
+    const clientSnap = await db.collection("clients").doc(clientId).get();
+    if (!clientSnap.exists) throw new HttpsError("not-found", "Client not found.");
+    const client = clientSnap.data();
+    const customerId = client.stripeCustomerId;
+    if (!customerId) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Client has no Stripe customer yet — subscribe them first."
+      );
+    }
+
+    const campaignSnap = await db
+      .collection("clients")
+      .doc(clientId)
+      .collection("campaigns")
+      .doc(campaignId)
+      .get();
+    const campaignName = campaignSnap.exists
+      ? campaignSnap.data()?.name || "Flyer campaign"
+      : "Flyer campaign";
+
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+
+    // Create the invoice with a description, then attach an item, then finalize
+    // + send. Doing it in this order lets us set `pending_invoice_items_behavior`
+    // to include only what we added, not any stray line items on the customer.
+    const invoice = await stripe.invoices.create({
+      customer: customerId,
+      collection_method: "send_invoice",
+      days_until_due: 7,
+      description: description || `Flyer charges — ${campaignName}`,
+      metadata: {
+        clientId,
+        campaignId,
+        campaignName,
+        source: "untapped_homes_portal",
+      },
+      pending_invoice_items_behavior: "exclude",
+    });
+
+    await stripe.invoiceItems.create({
+      customer: customerId,
+      invoice: invoice.id,
+      quantity,
+      unit_amount: unitAmount,
+      currency: "usd",
+      description: `${campaignName} — ${quantity.toLocaleString()} flyers @ $${(unitAmount / 100).toFixed(2)}`,
+    });
+
+    const finalized = await stripe.invoices.finalizeInvoice(invoice.id);
+    await stripe.invoices.sendInvoice(finalized.id);
+
+    // Persist a summary on the campaign so the admin UI can show status.
+    if (campaignSnap.exists) {
+      await campaignSnap.ref.update({
+        stripeInvoiceId: finalized.id,
+        stripeInvoiceStatus: finalized.status,
+        stripeInvoiceHostedUrl: finalized.hosted_invoice_url,
+        stripeInvoiceSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        stripeInvoiceTotalCents: finalized.total,
+      });
+    }
+
+    return {
+      invoiceId: finalized.id,
+      hostedInvoiceUrl: finalized.hosted_invoice_url,
+      total: finalized.total,
+      status: finalized.status,
+    };
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// stripeWebhook — persists sub + invoice state back to Firestore
+// ─────────────────────────────────────────────────────────────────────────────
+exports.stripeWebhook = onRequest(
+  { secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET], cors: false, invoker: "public" },
+  async (req, res) => {
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+    let event;
+    try {
+      const sig = req.headers["stripe-signature"];
+      // req.rawBody is a Buffer provided by firebase-functions for the raw payload.
+      event = stripe.webhooks.constructEvent(
+        req.rawBody,
+        sig,
+        STRIPE_WEBHOOK_SECRET.value()
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    try {
+      switch (event.type) {
+        case "checkout.session.completed": {
+          const s = event.data.object;
+          const clientId = s.metadata?.clientId || s.subscription_details?.metadata?.clientId;
+          if (clientId && s.customer) {
+            const patch = {
+              stripeCustomerId: s.customer,
+              stripeSubscriptionId: s.subscription || null,
+              subscriptionStatus: s.subscription ? "active" : "incomplete",
+              lastCheckoutAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+            await db.collection("clients").doc(clientId).set(patch, { merge: true });
+          }
+          break;
+        }
+
+        case "customer.subscription.created":
+        case "customer.subscription.updated":
+        case "customer.subscription.deleted": {
+          const sub = event.data.object;
+          const clientId = sub.metadata?.clientId;
+          if (clientId) {
+            const first = sub.items?.data?.[0];
+            await db.collection("clients").doc(clientId).set(
+              {
+                stripeSubscriptionId: sub.id,
+                subscriptionStatus: sub.status,
+                subscriptionPriceId: first?.price?.id || null,
+                subscriptionCurrentPeriodEnd: sub.current_period_end
+                  ? admin.firestore.Timestamp.fromMillis(sub.current_period_end * 1000)
+                  : null,
+                cancelAtPeriodEnd: !!sub.cancel_at_period_end,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+          }
+          break;
+        }
+
+        case "invoice.paid":
+        case "invoice.finalized":
+        case "invoice.payment_failed":
+        case "invoice.voided":
+        case "invoice.marked_uncollectible": {
+          const inv = event.data.object;
+          const clientId =
+            inv.metadata?.clientId ||
+            inv.subscription_details?.metadata?.clientId ||
+            null;
+          if (clientId) {
+            const paymentDoc = {
+              stripeInvoiceId: inv.id,
+              status: inv.status,
+              paid: inv.status === "paid",
+              amountDue: inv.amount_due,
+              amountPaid: inv.amount_paid,
+              hostedInvoiceUrl: inv.hosted_invoice_url,
+              periodStart: inv.period_start
+                ? admin.firestore.Timestamp.fromMillis(inv.period_start * 1000)
+                : null,
+              periodEnd: inv.period_end
+                ? admin.firestore.Timestamp.fromMillis(inv.period_end * 1000)
+                : null,
+              description: inv.description || null,
+              metadata: inv.metadata || null,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            };
+            await db
+              .collection("clients")
+              .doc(clientId)
+              .collection("payments")
+              .doc(inv.id)
+              .set(paymentDoc, { merge: true });
+            await db.collection("clients").doc(clientId).set(
+              {
+                lastInvoiceStatus: inv.status,
+                lastInvoiceAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+          }
+          break;
+        }
+
+        case "payment_method.attached":
+        case "customer.updated": {
+          const customer = event.data.object;
+          // Find the client with this customer id (if any) and refresh the
+          // default payment method summary.
+          const q = await db
+            .collection("clients")
+            .where("stripeCustomerId", "==", customer.id)
+            .limit(1)
+            .get();
+          if (!q.empty) {
+            const cardId =
+              customer.invoice_settings?.default_payment_method ||
+              customer.default_source ||
+              null;
+            let brand = null;
+            let last4 = null;
+            if (cardId && typeof cardId === "string") {
+              try {
+                const pm = await stripe.paymentMethods.retrieve(cardId);
+                brand = pm.card?.brand || null;
+                last4 = pm.card?.last4 || null;
+              } catch (e) { /* ignore */ }
+            }
+            await q.docs[0].ref.set(
+              {
+                paymentMethod: cardId ? { brand, last4 } : null,
+                billingEmail: customer.email || null,
+              },
+              { merge: true }
+            );
+          }
+          break;
+        }
+
+        default:
+          // Ignore other events.
+          break;
+      }
+    } catch (err) {
+      console.error("Webhook handler failed:", err);
+      return res.status(500).send("Handler error");
+    }
+
+    res.status(200).send("ok");
+  }
+);
