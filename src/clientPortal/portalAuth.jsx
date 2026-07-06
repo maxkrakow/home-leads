@@ -12,7 +12,7 @@ import {
   signInAnonymously,
   signOut as fbSignOut,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, ADMIN_EMAILS, DEMO_EMAIL, DEMO_CLIENT_ID } from "../firebase";
 
 const PortalAuthContext = createContext(null);
@@ -44,22 +44,31 @@ export function PortalAuthProvider({ children }) {
     const byUid = await getDoc(doc(db, "clients", u.uid));
     if (byUid.exists()) return { id: byUid.id, ...byUid.data() };
 
+    // Look for an admin-provisioned doc keyed by email (that's how the admin
+    // "Create client" form seeds them). Direct getDoc — no collection query,
+    // so it works under owner-only Firestore rules.
     if (u.email) {
-      const q = query(collection(db, "clients"), where("email", "==", u.email.toLowerCase()));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const seed = snap.docs[0].data();
-        await setDoc(
-          doc(db, "clients", u.uid),
-          {
-            ...seed,
-            email: u.email.toLowerCase(),
-            uid: u.uid,
-            claimedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
-        return { id: u.uid, ...seed, uid: u.uid };
+      const emailKey = u.email.toLowerCase();
+      try {
+        const byEmail = await getDoc(doc(db, "clients", emailKey));
+        if (byEmail.exists()) {
+          const seed = byEmail.data();
+          await setDoc(
+            doc(db, "clients", u.uid),
+            {
+              ...seed,
+              email: emailKey,
+              uid: u.uid,
+              claimedAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+          return { id: u.uid, ...seed, uid: u.uid };
+        }
+      } catch (e) {
+        // Rules may reject if the doc exists but isn't owned by this user's
+        // email — that's fine, just fall through to the auto-create path.
+        console.warn("email-keyed client lookup failed:", e.message);
       }
     }
 

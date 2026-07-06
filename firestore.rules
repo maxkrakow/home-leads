@@ -42,7 +42,26 @@ service cloud.firestore {
     // Client portal accounts + subcollections.
     match /clients/{clientId} {
       allow read, write: if isAdmin();
-      allow read, create, update: if isClientOwner(clientId);
+
+      // Per-document reads: owner (uid- or email-keyed) can read their own doc.
+      // Also allow reads when the doc's email field matches the auth email —
+      // this covers pre-signed-in provisioning where the doc is keyed by uid
+      // but we're looking it up by email lookup after sign-in.
+      allow read: if request.auth != null && (
+        clientId == request.auth.uid
+        || clientId == request.auth.token.email
+        || resource.data.email == request.auth.token.email
+      );
+
+      allow create: if request.auth != null && (
+        clientId == request.auth.uid
+        || clientId == request.auth.token.email
+      );
+      allow update: if request.auth != null && (
+        clientId == request.auth.uid
+        || clientId == request.auth.token.email
+        || resource.data.email == request.auth.token.email
+      );
 
       match /campaigns/{campaignId} {
         allow read, write: if isAdmin();
