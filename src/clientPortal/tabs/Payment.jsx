@@ -55,11 +55,33 @@ export default function Payment({ view }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo, client?.id]);
 
-  // Load recent invoices for the real client.
+  // Load recent invoices for the real client. Tries Stripe live first so newly
+  // sent invoices show up before the webhook lands, then falls back to the
+  // Firestore payments/ mirror if the Stripe call fails.
   useEffect(() => {
     let cancelled = false;
     async function load() {
       if (isDemo || !client?.id) return;
+      try {
+        const listFn = httpsCallable(getFunctions(), "listStripeInvoices");
+        const res = await listFn({ limit: 25 });
+        if (cancelled) return;
+        const live = (res.data?.invoices || []).map((inv) => ({
+          id: inv.id,
+          description: inv.description,
+          status: inv.status,
+          amountDue: inv.amountDue,
+          hostedInvoiceUrl: inv.hostedInvoiceUrl,
+          updatedAt: inv.created ? new Date(inv.created) : null,
+        }));
+        if (live.length > 0) {
+          setInvoices(live);
+          return;
+        }
+      } catch (err) {
+        console.warn("listStripeInvoices failed, falling back to Firestore:", err.message);
+      }
+      // Fallback: read whatever the webhook has written to payments/.
       try {
         const snap = await getDocs(query(
           collection(db, "clients", client.id, "payments"),

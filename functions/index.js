@@ -224,6 +224,51 @@ exports.syncStripeSubscription = onCall(
   }
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// listStripeInvoices — pull invoices straight from Stripe on demand.
+// Used as a bootstrap so newly-issued flyer invoices show up on the Payment
+// tab even before the webhook has caught up. Auth-scoped to the caller;
+// admins can pass targetClientId to look at anyone.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.listStripeInvoices = onCall(
+  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    const callerEmail = (request.auth.token.email || "").toLowerCase();
+    const callerIsAdmin = ADMIN_EMAILS.has(callerEmail);
+    const { targetClientId, limit: rawLimit } = request.data || {};
+    const clientId = (callerIsAdmin && targetClientId) ? targetClientId : request.auth.uid;
+
+    const snap = await db.collection("clients").doc(clientId).get();
+    if (!snap.exists) return { invoices: [] };
+    const customerId = snap.data()?.stripeCustomerId;
+    if (!customerId) return { invoices: [] };
+
+    const stripe = stripeClient(STRIPE_SECRET_KEY.value());
+    const list = await stripe.invoices.list({
+      customer: customerId,
+      limit: Math.min(Math.max(Number(rawLimit) || 25, 1), 100),
+    });
+
+    const invoices = list.data.map((inv) => ({
+      id: inv.id,
+      description: inv.description || inv.lines?.data?.[0]?.description || "Invoice",
+      status: inv.status,
+      amountDue: inv.amount_due,
+      amountPaid: inv.amount_paid,
+      total: inv.total,
+      hostedInvoiceUrl: inv.hosted_invoice_url,
+      invoicePdf: inv.invoice_pdf,
+      periodStart: inv.period_start ? inv.period_start * 1000 : null,
+      periodEnd: inv.period_end ? inv.period_end * 1000 : null,
+      created: inv.created ? inv.created * 1000 : null,
+      metadata: inv.metadata || null,
+    }));
+
+    return { invoices };
+  }
+);
+
 // Convert Firestore Timestamps → epoch millis so the callable can return them.
 function serializePatch(patch) {
   const out = {};
