@@ -27,6 +27,17 @@ const db = admin.firestore();
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 
+// Explicit CORS origin list. `cors: true` on 2nd-gen onCall doesn't cover
+// production hosted domains reliably, so we pin the ones we serve from.
+const CORS_ORIGINS = [
+  "https://untappedhomes.com",
+  "https://www.untappedhomes.com",
+  "https://home-leads-6bbae.web.app",
+  "https://home-leads-6bbae.firebaseapp.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
 // Stripe Price IDs — keep in sync with the products in Stripe dashboard.
 const PRICE_IDS = {
   standard: "price_1TZCeNF7R4hDasepwuKgGAzs", // $499/mo
@@ -143,7 +154,7 @@ async function readDefaultPaymentMethod(stripe, customerId, subDefaultPm) {
 // pre-portal clients don't have to re-checkout.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.syncStripeSubscription = onCall(
-  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: CORS_ORIGINS },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
     const uid = request.auth.uid;
@@ -231,7 +242,7 @@ exports.syncStripeSubscription = onCall(
 // admins can pass targetClientId to look at anyone.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.listStripeInvoices = onCall(
-  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: CORS_ORIGINS },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
     const callerEmail = (request.auth.token.email || "").toLowerCase();
@@ -290,7 +301,7 @@ function serializePatch(patch) {
 // subscribe someone on the $249 tier or for multiple flyer streams.
 // ─────────────────────────────────────────────────────────────────────────────
 exports.createCheckoutSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: CORS_ORIGINS },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
     const callerEmail = (request.auth.token.email || "").toLowerCase();
@@ -347,7 +358,7 @@ exports.createCheckoutSession = onCall(
 // createBillingPortalSession — user manages card / cancels / downloads invoices
 // ─────────────────────────────────────────────────────────────────────────────
 exports.createBillingPortalSession = onCall(
-  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: CORS_ORIGINS },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
     const uid = request.auth.uid;
@@ -375,7 +386,7 @@ exports.createBillingPortalSession = onCall(
 // sendFlyerInvoice (admin) — one-off invoice for a campaign's flyer count
 // ─────────────────────────────────────────────────────────────────────────────
 exports.sendFlyerInvoice = onCall(
-  { secrets: [STRIPE_SECRET_KEY], cors: true },
+  { secrets: [STRIPE_SECRET_KEY], cors: CORS_ORIGINS },
   async (request) => {
     if (!request.auth) throw new HttpsError("unauthenticated", "Sign in first.");
     const callerEmail = (request.auth.token.email || "").toLowerCase();
